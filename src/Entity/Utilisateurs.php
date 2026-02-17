@@ -2,11 +2,11 @@
 
 namespace App\Entity;
 
-use App\Repository\UtilisateurRepository;
+use App\Repository\UtilisateursRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\DBAL\Types\Types;
+// use Doctrine\DBAL\Types\Types;
 
-#[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
+#[ORM\Entity(repositoryClass: UtilisateursRepository::class)]
 class Utilisateurs extends BaseEntite
 {
     #[ORM\Column(length: 255)]
@@ -21,7 +21,7 @@ class Utilisateurs extends BaseEntite
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
-    #[ORM\ManyToOne(targetEntity: Role::class)]
+    #[ORM\ManyToOne(targetEntity: Roles::class)]
     #[ORM\JoinColumn(nullable: false)]
     private ?Roles $role = null;
 
