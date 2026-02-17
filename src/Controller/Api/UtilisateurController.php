@@ -5,7 +5,7 @@ namespace App\Controller\Api;
 
 use App\Entity\utilisateurs\Utilisateurs;
 use App\Service\utils\JwtTokenManager;
-use App\Service\utlisateurs\UtilisateursService;
+use App\Service\utilisateurs\UtilisateursService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
