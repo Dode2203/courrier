@@ -3,9 +3,9 @@
 namespace App\Controller\Api;
 
 
-use App\Entity\Utilisateur;
+use App\Entity\utilisateurs\Utilisateurs;
 use App\Service\utils\JwtTokenManager;
-use App\Service\utlisateur\UtilisateurService;
+use App\Service\utlisateurs\UtilisateursService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,11 +19,11 @@ class UtilisateurController extends AbstractController
 {
     private ParameterBagInterface $params;
     private EntityManagerInterface $em;
-    private UtilisateurService $utilisateurService;
+    private UtilisateursService $utilisateurService;
 
     private JwtTokenManager $jwtTokenManager;
 
-    public function __construct(EntityManagerInterface $em, UtilisateurService $utilisateurService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params)
+    public function __construct(EntityManagerInterface $em, UtilisateursService $utilisateurService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params)
     {
         $this->em = $em;
         $this->utilisateurService = $utilisateurService;
@@ -45,7 +45,6 @@ class UtilisateurController extends AbstractController
                     'nom' => $e->getNom(),
                     'prenom' => $e->getPrenom(),
                     'role' => $e->getRole()->getName(),
-                    'status' => $e->getStatus() ? $e->getStatus()->getName() : null
                 ];
             }, $users);
 
@@ -93,7 +92,7 @@ class UtilisateurController extends AbstractController
             ], 400);
         }
 
-        $user = new Utilisateur();
+        $user = new Utilisateurs();
         $user->setEmail($data['email'])
              ->setNom($data['nom'])
              ->setPrenom($data['prenom']);

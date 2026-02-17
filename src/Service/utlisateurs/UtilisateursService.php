@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Service\utlisateur;
+namespace App\Service\utlisateurs;
 
-use App\Entity\Utilisateurs;
-use App\Repository\RolesRepository;
+use App\Entity\utilisateurs\Utilisateurs;
+use App\Repository\utilisateurs\RolesRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Repository\UtilisateurRepository;
+use App\Repository\utilisateurs\UtilisateursRepository;
 use Exception;
 
-class UtilisateurService
+class UtilisateursService
 {
     private EntityManagerInterface $em;
      
-    private UtilisateurRepository $utilisateurRepository;
+    private UtilisateursRepository $utilisateurRepository;
     private RolesRepository $roleRepository;
 
 
-    public function __construct(EntityManagerInterface $em, UtilisateurRepository $utilisateurRepository, RolesRepository $roleRepository)
+    public function __construct(EntityManagerInterface $em, UtilisateursRepository $utilisateurRepository, RolesRepository $roleRepository)
     {
         $this->em = $em;
         $this->utilisateurRepository = $utilisateurRepository;
