@@ -2,12 +2,13 @@
 
 namespace App\EventListener;
 
-use App\Service\JwtTokenManager;
+use App\Service\utils\JwtTokenManager;
 use App\Annotation\TokenRequired;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Lcobucci\JWT\Token\Plain;
 
 class TokenListener
 {
@@ -26,11 +27,12 @@ class TokenListener
         return !empty($requiredRoles) && !empty(array_intersect($requiredRoles, $tokenRoles));
     }
 
-    public function onKernelController(ControllerEvent $event)
+
+    public function onKernelController(ControllerEvent $event): void
     {
         $controller = $event->getController();
 
-        // Vérifier si le contrôleur est valide
+        // Vérifier si le contrôleur est un tableau [ControllerObject, method]
         if (!is_array($controller)) {
             return;
         }
@@ -41,47 +43,54 @@ class TokenListener
         // Récupérer les attributs TokenRequired
         $attributes = $reflectionMethod->getAttributes(TokenRequired::class);
 
-        if (!empty($attributes)) {
-            // Récupérer la requête
-            $request = $event->getRequest();
-
-            // Extraire le token de la requête
-            $tokenString = $this->jwtTokenManager->extractTokenFromRequest($request);
-            
-
-            if (!$tokenString) {
-                $event->setController(function () {
-                    return new JsonResponse(['error' => 'Token is required'], Response::HTTP_UNAUTHORIZED);
-                });
-                return;
-            }
-
-            // Parser et valider le token
-            $parsedToken = $this->jwtTokenManager->parseToken($tokenString);
-            if (!$parsedToken || !$this->jwtTokenManager->validateToken($parsedToken)) {
-                $event->setController(function () {
-                    return new JsonResponse(['error' => 'Invalid or expired token'], Response::HTTP_UNAUTHORIZED);
-                });
-                return;
-            }
-
-            // Vérifier les rôles
-            $tokenRoles = $parsedToken->claims()->get('role', []);
-            if (!is_array($tokenRoles)) {
-                $tokenRoles = [$tokenRoles];
-            }
-            $requiredRoles = $attributes[0]->newInstance()->getRoles();
-            if (empty($requiredRoles)) {
-                return;  // Pas de vérification de rôles nécessaire
-            }
-
-            if (!$this->checkRoles($tokenRoles, $requiredRoles)) {
-                $event->setController(function () {
-                    return new JsonResponse(['error' => 'Access denied: insufficient roles'], Response::HTTP_FORBIDDEN);
-                });
-                return;
-            }
+        if (empty($attributes)) {
+            return; // Pas besoin de token
         }
+
+        $request = $event->getRequest();
+
+        // Extraire le token
+        $tokenString = $this->jwtTokenManager->extractTokenFromRequest($request);
+
+        if (!$tokenString) {
+            $event->setController(fn() => new JsonResponse(
+                ['error' => 'Token is required'], 
+                Response::HTTP_UNAUTHORIZED
+            ));
+            return;
+        }
+
+        // Parser et valider le token
+        $parsedToken = $this->jwtTokenManager->parseToken($tokenString);
+
+        if (!$parsedToken instanceof Plain || !$this->jwtTokenManager->validateToken($parsedToken)) {
+            $event->setController(fn() => new JsonResponse(
+                ['error' => 'Invalid or expired token'], 
+                Response::HTTP_UNAUTHORIZED
+            ));
+            return;
+        }
+
+        // Vérifier les rôles
+        $tokenRoles = $parsedToken->claims()->get('role', []);
+        if (!is_array($tokenRoles)) {
+            $tokenRoles = [$tokenRoles];
+        }
+
+        /** @var TokenRequired $tokenRequiredInstance */
+        $tokenRequiredInstance = $attributes[0]->newInstance();
+        $requiredRoles = $tokenRequiredInstance->getRoles();
+
+        if (!empty($requiredRoles) && !$this->checkRoles($tokenRoles, $requiredRoles)) {
+            $event->setController(fn() => new JsonResponse(
+                ['error' => 'Access denied: insufficient roles'], 
+                Response::HTTP_FORBIDDEN
+            ));
+            return;
+        }
+
+        // Si tout est ok, le contrôleur original s’exécute normalement
     }
+
 
 }

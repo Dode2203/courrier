@@ -1,19 +1,19 @@
 <?php
 
 namespace App\Service\utils;
+
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
-use Lcobucci\JWT\Token;
+use Lcobucci\JWT\Token\Plain;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Lcobucci\JWT\Validation\Constraint\ValidAt;
 use Lcobucci\Clock\SystemClock;
 use Symfony\Component\HttpFoundation\Request;
 
-class JwtTokenManager 
+class JwtTokenManager
 {
-    private $config;
-    
+    private Configuration $config;
 
     public function __construct(string $secretKey)
     {
@@ -23,91 +23,65 @@ class JwtTokenManager
         );
     }
 
-    public function createToken(array $claims, int $expirationInSeconds): Token
+    /**
+     * Crée un token JWT signé avec des claims et une expiration
+     */
+    public function createToken(array $claims, int $expirationInSeconds): Plain
     {
-        
-        $now = new \DateTimeImmutable('@' . time()); // Convertir le timestamp actuel en DateTimeImmutable
-        $expiration = $now->modify("+$expirationInSeconds seconds"); // Ajouter la durée d'expiration
-    
-        // Construction du token
+        $now = new \DateTimeImmutable();
+        $expiration = $now->modify("+$expirationInSeconds seconds");
+
         $builder = $this->config->builder()
-            ->issuedBy('your-app') // Issuer (émetteur)
-            ->permittedFor('your-client') // Audience (destinataire)
-            ->issuedAt($now) // Date d'émission
-            ->expiresAt($expiration); // Date d'expiration
-    
-        // Ajouter des claims personnalisés
+            ->issuedBy('your-app')      // Issuer
+            ->permittedFor('your-client') // Audience
+            ->issuedAt($now)
+            ->expiresAt($expiration);
+
         foreach ($claims as $key => $value) {
-            $builder->withClaim($key, $value);
+            $builder = $builder->withClaim($key, $value);
         }
-    
-        // Retourner le token signé
+
         return $builder->getToken($this->config->signer(), $this->config->signingKey());
-        }
+    }
 
-
-    // public function validateToken(Token $token): bool
-    // {
-    //     $clock = new SystemClock(new \DateTimeZone('UTC'));
-
-    //     $constraints = [
-    //         new SignedWith($this->config->signer(), $this->config->signingKey()),
-    //         new ValidAt($clock)
-    //     ];
-
-    //     return $this->config->validator()->validate($token, ...$constraints);
-    // }
-    
-    public function validateToken(Token $token): bool
+    /**
+     * Valide un token JWT
+     */
+    public function validateToken(Plain $token): bool
     {
         $clock = new SystemClock(new \DateTimeZone('UTC'));
+
         $constraints = [
-            new SignedWith($this->config->signer(), $this->config->signingKey()),
-            new ValidAt($clock, new \DateInterval('PT0S')) // Leeway de 0 secondes
+            new SignedWith($this->config->signer(), $this->config->verificationKey()),
+            new ValidAt($clock) // vérifie nbf, iat, exp automatiquement
         ];
 
-        // Vérification des claims 'nbf' et 'exp'
-        $now = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
-        $nbf = $token->claims()->get('nbf');
-        if (isset($nbf)) {
-            // Utiliser $nbf s'il est défini
-        } else {
-            $iat = $token->claims()->get('iat');
-            if (isset($iat)) {
-                $nbf = $iat; // Utiliser $iat si $nbf n'est pas défini
-            }
+        try {
+            return $this->config->validator()->validate($token, ...$constraints);
+        } catch (\Throwable $e) {
+            return false;
         }
-
-      
-        $exp = $token->claims()->get('exp');
-
-
-        if ($now < $nbf) {
-            
-            return false; // Le token n'est pas encore valide
-        } elseif ($now > $exp) {
-            
-            return false; // Le token est expiré
-        }
-
-        // Déboguer la validation de la signature
-        // if (!$this->config->validator()->validate($token, ...$constraints)) {
-        //     echo "Token validation failed due to constraints.\n";
-        //     return false;
-        // }
-
-        return true;
     }
-    public function parseToken(string $tokenString): ?Token
+
+    /**
+     * Parse un token depuis une string
+     */
+    public function parseToken(string $tokenString): ?Plain
     {
         try {
-            return $this->config->parser()->parse($tokenString);
+            $token = $this->config->parser()->parse($tokenString);
+            if (!$token instanceof Plain) {
+                return null;
+            }
+            return $token;
         } catch (\Throwable $e) {
             return null;
         }
     }
 
-    // Method to extract token from the Authorization header
+    /**
+     * Récupère le token depuis le header Authorization
+     */
     public function extractTokenFromRequest(Request $request): ?string
     {
         $authHeader = $request->headers->get('Authorization');
@@ -116,23 +90,21 @@ class JwtTokenManager
         }
         return null;
     }
+
+    /**
+     * Retourne les claims si le token est valide
+     */
     public function extractClaimsFromToken(string $tokenString): ?array
     {
-        // Parse the token
         $token = $this->parseToken($tokenString);
         if ($token === null) {
-            return null; // Token invalide ou non parsable
+            return null;
         }
 
-        // Vérifiez la validité du token
         if (!$this->validateToken($token)) {
-            return null; // Token non valide
+            return null;
         }
 
-        // Extraire les revendications (claims) du token
-        $claims = $token->claims()->all();
-
-        return $claims;
+        return $token->claims()->all();
     }
-
 }
