@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\messages;
 
 use App\Repository\MessagesRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
+use App\Entity\utils\BaseEntite;
+use App\Entity\courriers\Courriers;
+use App\Entity\utilisateurs\Utilisateurs;
 
 #[ORM\Entity(repositoryClass: MessagesRepository::class)]
 class Messages extends BaseEntite

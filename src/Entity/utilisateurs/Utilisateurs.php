@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\utilisateurs;
 
 use App\Repository\UtilisateursRepository;
 use Doctrine\ORM\Mapping as ORM;
-// use Doctrine\DBAL\Types\Types;
+use App\Entity\utils\BaseEntite;
 
 #[ORM\Entity(repositoryClass: UtilisateursRepository::class)]
 class Utilisateurs extends BaseEntite

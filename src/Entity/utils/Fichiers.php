@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\utils;
 
 use App\Repository\FichiersRepository;
 use Doctrine\ORM\Mapping as ORM;

@@ -3,9 +3,9 @@
 namespace App\Controller\Api;
 
 
-use App\Entity\Utilisateurs;
+use App\Entity\utilisateurs\Utilisateurs;
 use App\Service\utils\JwtTokenManager;
-use App\Service\utlisateur\UtilisateurService;
+use App\Service\utlisateurs\UtilisateursService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,11 +19,11 @@ class UtilisateurController extends AbstractController
 {
     private ParameterBagInterface $params;
     private EntityManagerInterface $em;
-    private UtilisateurService $utilisateurService;
+    private UtilisateursService $utilisateurService;
 
     private JwtTokenManager $jwtTokenManager;
 
-    public function __construct(EntityManagerInterface $em, UtilisateurService $utilisateurService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params)
+    public function __construct(EntityManagerInterface $em, UtilisateursService $utilisateurService,JwtTokenManager $jwtTokenManager, ParameterBagInterface $params)
     {
         $this->em = $em;
         $this->utilisateurService = $utilisateurService;
