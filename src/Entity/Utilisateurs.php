@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
-class Utilisateur extends BaseEntite
+class Utilisateurs extends BaseEntite
 {
     #[ORM\Column(length: 255)]
     private ?string $email = null;
@@ -23,7 +23,7 @@ class Utilisateur extends BaseEntite
 
     #[ORM\ManyToOne(targetEntity: Role::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Role $role = null;
+    private ?Roles $role = null;
 
     public function getEmail(): ?string
     {
@@ -69,12 +69,12 @@ class Utilisateur extends BaseEntite
         return $this;
     }
 
-    public function getRole(): ?Role
+    public function getRole(): ?Roles
     {
         return $this->role;
     }
 
-    public function setRole(?Role $role): static
+    public function setRole(?Roles $role): static
     {
         $this->role = $role;
         return $this;

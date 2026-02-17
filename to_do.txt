@@ -12,7 +12,7 @@ login
 
 message
     table
-        Fichier(nom,type,binaire,date_fin) --herite de baseEntite
+        Fichier(nom,type,binaire,dateFin) --herite de baseEntite
         Courrier(object,reference,description,mail,fichierId)--herite de baseEntite
         Message(courrierId,expediteurId,destinataireId,isRead)--herite de baseEntite
     fonction

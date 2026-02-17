@@ -2,8 +2,8 @@
 
 namespace App\Service\utlisateur;
 
-use App\Entity\Utilisateur;
-use App\Repository\RoleRepository;
+use App\Entity\Utilisateurs;
+use App\Repository\RolesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\UtilisateurRepository;
 use Exception;
@@ -13,10 +13,10 @@ class UtilisateurService
     private EntityManagerInterface $em;
      
     private UtilisateurRepository $utilisateurRepository;
-    private RoleRepository $roleRepository;
+    private RolesRepository $roleRepository;
 
 
-    public function __construct(EntityManagerInterface $em, UtilisateurRepository $utilisateurRepository, RoleRepository $roleRepository)
+    public function __construct(EntityManagerInterface $em, UtilisateurRepository $utilisateurRepository, RolesRepository $roleRepository)
     {
         $this->em = $em;
         $this->utilisateurRepository = $utilisateurRepository;
@@ -24,10 +24,10 @@ class UtilisateurService
     }
 
     /**
-     * @param Utilisateur $user L'utilisateur à créer
+     * @param Utilisateurs $user L'utilisateur à créer
      * @param string $plainPassword Le mot de passe en clair
      */
-    public function createUserByRole(Utilisateur $user): Utilisateur
+    public function createUserByRole(Utilisateurs $user): Utilisateurs
     {
 
         $plainPassword = $user->getMdp();
@@ -44,11 +44,11 @@ class UtilisateurService
     {
         return $this->utilisateurRepository->getAllParOrdre();
     }
-    public function getUserById(int $id): ?Utilisateur
+    public function getUserById(int $id): ?Utilisateurs
     {
-        return $this->em->getRepository(Utilisateur::class)->find($id);
+        return $this->utilisateurRepository->find($id);
     }
-    public function updateUser($idUser, array $data): Utilisateur
+    public function updateUser($idUser, array $data): Utilisateurs
     {
         $user = $this->utilisateurRepository->find($idUser);
         if(!$user){
@@ -67,7 +67,7 @@ class UtilisateurService
         }
 
         if (isset($data['role'])) {
-            $role = $this->roleRepository->findOneBy(['name' => $data['role']]);
+            $role = $this->roleRepository->findOneByName($data['role']);
             if (!$role) {
                 throw new \InvalidArgumentException('Rôle introuvable');
             }
@@ -84,7 +84,7 @@ class UtilisateurService
 
         return $user;
     }
-    public function createUser(Utilisateur $user,$role_id=2): Utilisateur
+    public function createUser(Utilisateurs $user,$role_id=2): Utilisateurs
     {
         $role= $this->roleRepository->find($role_id); // 2 correspond au rôle "Utilisateur"
         if (!$role) {
@@ -94,7 +94,7 @@ class UtilisateurService
         return $this->createUserByRole($user);
     }
 
-    public function login(string $email, string $plainPassword): ?Utilisateur
+    public function login(string $email, string $plainPassword): ?Utilisateurs
     {
         $user = $this->utilisateurRepository->login($email, $plainPassword);
 
