@@ -2,10 +2,10 @@
 
 namespace App\Entity;
 
-use App\Repository\RoleRepository;
+use App\Repository\RolesRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: RoleRepository::class)]
+#[ORM\Entity(repositoryClass: RolesRepository::class)]
 class Roles extends BaseEntite
 {
     #[ORM\Column(length: 255)]

@@ -2,11 +2,11 @@
 
 namespace App\Entity;
 
-use App\Repository\FichierRepository;
+use App\Repository\FichiersRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
 
-#[ORM\Entity(repositoryClass: FichierRepository::class)]
+#[ORM\Entity(repositoryClass: FichiersRepository::class)]
 class Fichiers extends BaseEntite
 {
     #[ORM\Column(length: 255)]

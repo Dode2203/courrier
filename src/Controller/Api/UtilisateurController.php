@@ -3,7 +3,7 @@
 namespace App\Controller\Api;
 
 
-use App\Entity\Utilisateur;
+use App\Entity\Utilisateurs;
 use App\Service\utils\JwtTokenManager;
 use App\Service\utlisateur\UtilisateurService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -45,7 +45,6 @@ class UtilisateurController extends AbstractController
                     'nom' => $e->getNom(),
                     'prenom' => $e->getPrenom(),
                     'role' => $e->getRole()->getName(),
-                    'status' => $e->getStatus() ? $e->getStatus()->getName() : null
                 ];
             }, $users);
 
@@ -93,7 +92,7 @@ class UtilisateurController extends AbstractController
             ], 400);
         }
 
-        $user = new Utilisateur();
+        $user = new Utilisateurs();
         $user->setEmail($data['email'])
              ->setNom($data['nom'])
              ->setPrenom($data['prenom']);

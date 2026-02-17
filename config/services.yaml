@@ -22,7 +22,7 @@ services:
       - "../src/Entity/"
       - "../src/Kernel.php"
 
-  App\Service\JwtTokenManager:
+  App\Service\utils\JwtTokenManager:
     arguments:
       $secretKey: "%jwt_secret%"
 
@@ -36,7 +36,7 @@ services:
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
-  App\Service\FileUploadService:
-    class: App\Service\FileUploadService
+  App\Service\utils\FileUploadService:
+    class: App\Service\utils\FileUploadService
     arguments:
       $uploadDir: "%kernel.project_dir%/public/uploads"
