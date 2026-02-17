@@ -3,7 +3,7 @@
 namespace App\Controller\Api;
 
 
-use App\Entity\Utilisateur;
+use App\Entity\Utilisateurs;
 use App\Service\utils\JwtTokenManager;
 use App\Service\utlisateur\UtilisateurService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -92,7 +92,7 @@ class UtilisateurController extends AbstractController
             ], 400);
         }
 
-        $user = new Utilisateur();
+        $user = new Utilisateurs();
         $user->setEmail($data['email'])
              ->setNom($data['nom'])
              ->setPrenom($data['prenom']);
