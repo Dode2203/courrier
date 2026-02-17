@@ -1,0 +1,38 @@
+table
+    baseEntite
+        id
+        date_creation
+        deleted_at
+login
+    table
+        Utilisateur(email,mdp,nom,prenom,role)--herite de baseEntite
+    fonction
+        login(email,mdp)
+        creer_utilisateur(email,mdp,nom,prenom)
+
+message
+    table
+        Fichier(nom,type,binaire,date_fin) --herite de baseEntite
+        Courrier(object,reference,description,mail,fichierId)--herite de baseEntite
+        Message(courrierId,expediteurId,destinataireId,isRead)--herite de baseEntite
+    fonction
+        courrier
+            courrierService
+                genererReference(debut)
+                saveCourier(Courrier)
+
+        message
+            messageService
+                envoyerMessage(expediteurId,destinataireId,courrierId)
+                    --socket
+        
+                lireMessage(messageId)
+                supprimerMessage(messageId)
+                getAllMessage(utilisateurId)
+            mailService
+                envoyerMail(courrierId) -- update date_fin
+        
+        
+        
+
+    

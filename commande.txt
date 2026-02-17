@@ -1,0 +1,27 @@
+# pour creer une nouvelle base de donne
+php bin/console doctrine:database:create
+\c espa;
+
+php bin/console make:entity Utilisateur
+
+php bin/console make:migration
+
+php bin/console doctrine:migrations:migrate
+
+php bin/console make:service UtilisateurService
+
+
+php bin/console cache:clear
+
+Pour forcer le nettoyage du cache en environnement dev :
+php bin/console cache:clear --env=dev
+
+pour lancer le serveur
+
+php -S 192.168.88.254:8000 -t public
+
+php -S 10.225.228.30:8000 -t public
+
+php -S 192.168.1.212:8000 -t public
+
+composer require symfony/uid
