@@ -1,19 +1,18 @@
 <?php
 
 namespace App\Repository;
-
-use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Entity\Utilisateurs;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Utilisateur>
+ * @extends ServiceEntityRepository<Utilisateurs>
  */
-class UtilisateurRepository extends ServiceEntityRepository
+class UtilisateursRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Utilisateur::class);
+        parent::__construct($registry, Utilisateurs::class);
     }
 
     //    /**
@@ -40,7 +39,7 @@ class UtilisateurRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
-    public function login(string $email, string $plainPassword): ?Utilisateur
+    public function login(string $email, string $plainPassword): ?Utilisateurs
     {
         $user = $this->findOneBy(['email' => $email]);
 

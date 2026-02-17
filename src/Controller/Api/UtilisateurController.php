@@ -45,7 +45,6 @@ class UtilisateurController extends AbstractController
                     'nom' => $e->getNom(),
                     'prenom' => $e->getPrenom(),
                     'role' => $e->getRole()->getName(),
-                    'status' => $e->getStatus() ? $e->getStatus()->getName() : null
                 ];
             }, $users);
 
