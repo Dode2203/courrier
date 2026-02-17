@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\courriers;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CourriersRepository;
-use App\Entity\Fichiers;
+use App\Entity\utils\Fichiers;
+use App\Entity\utils\BaseEntite;
 
 #[ORM\Entity(repositoryClass: CourriersRepository::class)]
 class Courriers extends BaseEntite

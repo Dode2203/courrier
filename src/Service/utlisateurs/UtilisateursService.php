@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Service\utlisateur;
+namespace App\Service\utlisateurs;
 
-use App\Entity\Utilisateurs;
-use App\Repository\RolesRepository;
+use App\Entity\utilisateurs\Utilisateurs;
+use App\Repository\utilisateurs\RolesRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Repository\UtilisateursRepository;
+use App\Repository\utilisateurs\UtilisateursRepository;
 use Exception;
 
-class UtilisateurService
+class UtilisateursService
 {
     private EntityManagerInterface $em;
      

@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\utilisateurs;
 
 use App\Repository\RolesRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\utils\BaseEntite;
 
 #[ORM\Entity(repositoryClass: RolesRepository::class)]
 class Roles extends BaseEntite
