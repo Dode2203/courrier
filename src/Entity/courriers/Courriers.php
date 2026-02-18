@@ -24,6 +24,9 @@ class Courriers extends BaseEntite
     #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
     private ?Fichiers $fichier = null;
 
+    #[ORM\Column(type: "datetime_immutable", nullable: true)]
+    private ?\DateTimeImmutable $dateFin = null;
+
 
     public function getReference(): ?string
     {
@@ -66,6 +69,17 @@ class Courriers extends BaseEntite
     public function setFichier(?Fichiers $fichier): self
     {
         $this->fichier = $fichier;
+        return $this;
+    }
+
+    public function getDateFin(): ?\DateTimeImmutable
+    {
+        return $this->dateFin;
+    }
+
+    public function setDateFin(?\DateTimeImmutable $dateFin): self
+    {
+        $this->dateFin = $dateFin;
         return $this;
     }
 }

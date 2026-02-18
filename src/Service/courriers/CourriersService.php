@@ -25,6 +25,26 @@ class CourriersService
     }
 
     /**
+     * Récupère un courrier par son ID
+     */
+    public function getCourrierById(int $id): ?Courriers
+    {
+        return $this->repo->find($id);
+    }
+
+    /**
+     * Clôture un courrier
+     */
+    public function cloturerCourrier(int $id): void
+    {
+        $courrier = $this->getCourrierById($id);
+        if ($courrier) {
+            $courrier->setDateFin(new \DateTimeImmutable());
+            $this->repo->save($courrier);
+        }
+    }
+
+    /**
      * Sauvegarde un courrier avec génération de référence si nécessaire
      */
     public function save(Courriers $courrier): void
