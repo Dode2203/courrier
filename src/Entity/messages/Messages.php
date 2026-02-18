@@ -28,7 +28,7 @@ class Messages extends BaseEntite
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $isReadAt = null;
 
-        
+
     public function getCourrier(): ?Courriers
     {
         return $this->courrier;
@@ -73,4 +73,27 @@ class Messages extends BaseEntite
         return $this;
     }
 
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'courrier' => $this->courrier ? [
+                'id' => $this->courrier->getId(),
+                'reference' => $this->courrier->getReference(),
+                'object' => $this->courrier->getObject(),
+            ] : null,
+            'expediteur' => $this->expediteur ? [
+                'id' => $this->expediteur->getId(),
+                'nom' => $this->expediteur->getNom(),
+                'prenom' => $this->expediteur->getPrenom(),
+            ] : null,
+            'destinataire' => $this->destinataire ? [
+                'id' => $this->destinataire->getId(),
+                'nom' => $this->destinataire->getNom(),
+                'prenom' => $this->destinataire->getPrenom(),
+            ] : null,
+            'isReadAt' => $this->isReadAt ? $this->isReadAt->format('Y-m-d H:i:s') : null,
+            'dateCreation' => $this->getDateCreation() ? $this->getDateCreation()->format('Y-m-d H:i:s') : null,
+        ];
+    }
 }

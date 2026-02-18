@@ -3,7 +3,7 @@
 namespace App\Entity\courriers;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Repository\CourriersRepository;
+use App\Repository\courriers\CourriersRepository;
 use App\Entity\utils\Fichiers;
 use App\Entity\utils\BaseEntite;
 
@@ -43,10 +43,12 @@ class Courriers extends BaseEntite
         $this->reference = $reference;
         return $this;
     }
-    public function getObject(): ?string{
+    public function getObject(): ?string
+    {
         return $this->object;
     }
-    public function setObject(?string $object): self{
+    public function setObject(?string $object): self
+    {
         $this->object = $object;
         return $this;
     }
@@ -95,4 +97,21 @@ class Courriers extends BaseEntite
         $this->dateFin = $dateFin;
         return $this;
     }
+
+    // public function toArray(): array
+    // {
+    //     return [
+    //         'id' => $this->getId(),
+    //         'reference' => $this->reference,
+    //         'object' => $this->object,
+    //         'description' => $this->description,
+    //         'mail' => $this->mail,
+    //         'dateFin' => $this->dateFin ? $this->dateFin->format('Y-m-d H:i:s') : null,
+    //         'dateCreation' => $this->getDateCreation() ? $this->getDateCreation()->format('Y-m-d H:i:s') : null,
+    //         'fichier' => $this->fichier ? [
+    //             'id' => $this->fichier->getId(),
+    //             'nom' => $this->fichier->getNom(), // Suppression de l'erreur potentielle si Fichiers a getNom
+    //         ] : null,
+    //     ];
+    // }
 }
