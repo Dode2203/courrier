@@ -46,4 +46,34 @@ class MessagesRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function save(Messages $message, bool $flush = true): void
+    {
+        $this->getEntityManager()->persist($message);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    public function getById(int $id): ?Messages
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.id = :id')
+            ->andWhere('m.deletedAt IS NULL')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function findByUtilisateur(int $userId): array
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.destinataire = :userId')
+            ->andWhere('m.deletedAt IS NULL')
+            ->setParameter('userId', $userId)
+            ->orderBy('m.dateCreation', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
 }

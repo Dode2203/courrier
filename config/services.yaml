@@ -7,6 +7,10 @@ parameters:
   jwt_secret: "%env(JWT_SECRET)%"
   jwt_token_duration: '%env(int:JWT_TOKEN_DURATION)%'
 
+  # On lie les variables du .env aux paramètres Symfony
+  app.mailer_from: '%env(MAILER_FROM)%'
+  app.mailer_name: '%env(MAILER_NAME)%'
+
 services:
   # default configuration for services in *this* file
   _defaults:
@@ -40,3 +44,9 @@ services:
     class: App\Service\utils\FileUploadService
     arguments:
       $uploadDir: "%kernel.project_dir%/public/uploads"
+
+  # On dit à Symfony d'injecter ces paramètres dans MailService
+  App\Service\messages\MailService:
+    arguments:
+      $mailFrom: '%app.mailer_from%'
+      $mailName: '%app.mailer_name%'
