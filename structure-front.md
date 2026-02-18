@@ -1,15 +1,15 @@
 # Structure Front-end
 app/ 
-    courier/
+    courrier/
         page.tsx
 
 components/
-    courier/
-        CourierComponents
+    courrier/
+        CourrierComponents
 hooks/
-    courier/
-        courier.ts
+    courrier/
+        courrier.ts
 types/
-    courier/
-        courier.ts
+    courrier/
+        courrier.ts
 

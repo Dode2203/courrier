@@ -13,8 +13,13 @@ class Courriers extends BaseEntite
     #[ORM\Column(type: "string", length: 100, nullable: false)]
     private ?string $reference = null;
 
+    #[ORM\Column(type: "string", length: 255, nullable: false)]
+    private ?string $object = null;
+
     #[ORM\Column(type: "text", nullable: true)]
     private ?string $description = null;
+
+
 
     #[ORM\Column(type: "string", length: 100, nullable: false)]
     private ?string $mail = null;
@@ -38,6 +43,14 @@ class Courriers extends BaseEntite
         $this->reference = $reference;
         return $this;
     }
+    public function getObject(): ?string{
+        return $this->object;
+    }
+    public function setObject(?string $object): self{
+        $this->object = $object;
+        return $this;
+    }
+
 
     public function getDescription(): ?string
     {
