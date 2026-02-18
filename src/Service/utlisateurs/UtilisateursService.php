@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\utlisateurs;
+namespace App\Service\utilisateurs;
 
 use App\Entity\utilisateurs\Utilisateurs;
 use App\Repository\utilisateurs\RolesRepository;
