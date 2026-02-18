@@ -10,13 +10,13 @@ use App\Entity\utils\BaseEntite;
 #[ORM\Entity(repositoryClass: CourriersRepository::class)]
 class Courriers extends BaseEntite
 {
-    #[ORM\Column(type:"string", length:100, nullable:false)]
-    private string $reference;
+    #[ORM\Column(type: "string", length: 100, nullable: false)]
+    private ?string $reference = null;
 
-    #[ORM\Column(type:"text", nullable:true)]
+    #[ORM\Column(type: "text", nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(type:"string", length:100, nullable:false)]
+    #[ORM\Column(type: "string", length: 100, nullable: false)]
     private ?string $mail = null;
 
     // Relation ManyToOne vers Fichier
@@ -25,12 +25,12 @@ class Courriers extends BaseEntite
     private ?Fichiers $fichier = null;
 
 
-    public function getReference(): string
+    public function getReference(): ?string
     {
         return $this->reference;
     }
 
-    public function setReference(string $reference): self
+    public function setReference(?string $reference): self
     {
         $this->reference = $reference;
         return $this;
