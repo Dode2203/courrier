@@ -6,6 +6,7 @@ use App\Entity\messages\Messages;
 use App\Repository\messages\MessagesRepository;
 use App\Service\courriers\CourriersService;
 use App\Service\utilisateurs\UtilisateursService;
+use App\Service\utils\ValidationService;
 use Exception;
 
 class MessagesService
@@ -13,7 +14,8 @@ class MessagesService
     public function __construct(
         private readonly MessagesRepository $repo,
         private readonly UtilisateursService $utilisateursService,
-        private readonly CourriersService $courriersService
+        private readonly CourriersService $courriersService,
+        private readonly ValidationService $validator
     ) {
     }
 
@@ -23,12 +25,13 @@ class MessagesService
     public function envoyerMessage(int $expId, int $destId, int $courrierId): void
     {
         $expediteur = $this->utilisateursService->getUserById($expId);
-        $destinataire = $this->utilisateursService->getUserById($destId);
-        $courrier = $this->courriersService->getCourrierById($courrierId);
+        $this->validator->throwIfNull($expediteur, "Expéditeur avec l'ID $expId introuvable.");
 
-        if (!$expediteur || !$destinataire || !$courrier) {
-            throw new Exception("L'expéditeur, le destinataire ou le courrier est introuvable.");
-        }
+        $destinataire = $this->utilisateursService->getUserById($destId);
+        $this->validator->throwIfNull($destinataire, "Destinataire avec l'ID $destId introuvable.");
+
+        $courrier = $this->courriersService->getCourrierById($courrierId);
+        $this->validator->throwIfNull($courrier, "Courrier avec l'ID $courrierId introuvable.");
 
         $message = new Messages();
         $message->setExpediteur($expediteur);
@@ -45,9 +48,7 @@ class MessagesService
     public function lireMessage(int $messageId): void
     {
         $message = $this->repo->getById($messageId);
-        if (!$message) {
-            throw new Exception("Message introuvable.");
-        }
+        $this->validator->throwIfNull($message, "Message avec l'ID $messageId introuvable.");
 
         $message->setIsReadAt(new \DateTimeImmutable());
         $this->repo->save($message);
@@ -59,9 +60,7 @@ class MessagesService
     public function supprimerMessage(int $messageId): void
     {
         $message = $this->repo->getById($messageId);
-        if (!$message) {
-            throw new Exception("Message introuvable.");
-        }
+        $this->validator->throwIfNull($message, "Message avec l'ID $messageId introuvable.");
 
         $message->delete(); // Méthode héritée de BaseEntite
         $this->repo->save($message);

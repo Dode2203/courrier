@@ -3,6 +3,7 @@
 namespace App\Service\messages;
 
 use App\Service\courriers\CourriersService;
+use App\Service\utils\ValidationService;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\Address;
@@ -13,7 +14,9 @@ class MailService
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly CourriersService $courriersService,
-        private readonly string $mailFrom
+        private readonly ValidationService $validator,
+        private readonly string $mailFrom,
+        private readonly string $mailName
     ) {
     }
 
@@ -23,10 +26,7 @@ class MailService
     public function envoyerMail(int $courrierId): void
     {
         $courrier = $this->courriersService->getCourrierById($courrierId);
-
-        if (!$courrier) {
-            throw new Exception("Courrier introuvable.");
-        }
+        $this->validator->throwIfNull($courrier, "Courrier avec l'ID $courrierId introuvable.");
 
         $recipientMail = $courrier->getMail();
         if ($recipientMail && !empty(trim($recipientMail))) {

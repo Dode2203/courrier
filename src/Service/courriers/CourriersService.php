@@ -4,11 +4,13 @@ namespace App\Service\courriers;
 
 use App\Entity\courriers\Courriers;
 use App\Repository\courriers\CourriersRepository;
+use App\Service\utils\ValidationService;
 
 class CourriersService
 {
     public function __construct(
-        private readonly CourriersRepository $repo
+        private readonly CourriersRepository $repo,
+        private readonly ValidationService $validator
     ) {
     }
 
@@ -38,10 +40,10 @@ class CourriersService
     public function cloturerCourrier(int $id): void
     {
         $courrier = $this->getCourrierById($id);
-        if ($courrier) {
-            $courrier->setDateFin(new \DateTimeImmutable());
-            $this->repo->save($courrier);
-        }
+        $this->validator->throwIfNull($courrier, "Courrier avec l'id $id introuvable.");
+
+        $courrier->setDateFin(new \DateTimeImmutable());
+        $this->repo->save($courrier);
     }
 
     /**
