@@ -19,8 +19,6 @@ class Courriers extends BaseEntite
     #[ORM\Column(type: "text", nullable: true)]
     private ?string $description = null;
 
-
-
     #[ORM\Column(type: "string", length: 100, nullable: false)]
     private ?string $mail = null;
 
