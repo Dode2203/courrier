@@ -79,7 +79,7 @@ class MessageController extends BaseApiController
     /**
      * Marque un message comme lu
      */
-    #[Route('/{id}/lire', name: 'api_messages_lire', methods: ['PATCH'])]
+    #[Route('/{id}/lire', name: 'api_messages_lire', methods: ['PATCH'], requirements: ['id' => '\d+'])]
     #[TokenRequired]
     public function lire(int $id, Request $request): JsonResponse
     {
