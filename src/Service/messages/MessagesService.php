@@ -8,6 +8,8 @@ use App\Service\courriers\CourriersService;
 use App\Service\utilisateurs\UtilisateursService;
 use App\Service\utils\ValidationService;
 use Exception;
+use Doctrine\ORM\EntityManagerInterface;
+
 
 class MessagesService
 {
@@ -15,32 +17,37 @@ class MessagesService
         private readonly MessagesRepository $repo,
         private readonly UtilisateursService $utilisateursService,
         private readonly CourriersService $courriersService,
-        private readonly ValidationService $validator
+        private readonly ValidationService $validator,
+        private readonly EntityManagerInterface $entityManager
     ) {
     }
+
 
     /**
      * Envoie un message concernant un courrier
      */
     public function envoyerMessage(int $expId, int $destId, int $courrierId): void
     {
-        $expediteur = $this->utilisateursService->getUserById($expId);
-        $this->validator->throwIfNull($expediteur, "Expéditeur avec l'ID $expId introuvable.");
+        $this->entityManager->wrapInTransaction(function () use ($expId, $destId, $courrierId) {
+            $expediteur = $this->utilisateursService->getUserById($expId);
+            $this->validator->throwIfNull($expediteur, "Expéditeur avec l'ID $expId introuvable.");
 
-        $destinataire = $this->utilisateursService->getUserById($destId);
-        $this->validator->throwIfNull($destinataire, "Destinataire avec l'ID $destId introuvable.");
+            $destinataire = $this->utilisateursService->getUserById($destId);
+            $this->validator->throwIfNull($destinataire, "Destinataire avec l'ID $destId introuvable.");
 
-        $courrier = $this->courriersService->getCourrierById($courrierId);
-        $this->validator->throwIfNull($courrier, "Courrier avec l'ID $courrierId introuvable.");
+            $courrier = $this->courriersService->getCourrierById($courrierId);
+            $this->validator->throwIfNull($courrier, "Courrier avec l'ID $courrierId introuvable.");
 
-        $message = new Messages();
-        $message->setExpediteur($expediteur);
-        $message->setDestinataire($destinataire);
-        $message->setCourrier($courrier);
-        $message->setIsReadAt(null);
+            $message = new Messages();
+            $message->setExpediteur($expediteur);
+            $message->setDestinataire($destinataire);
+            $message->setCourrier($courrier);
+            $message->setIsReadAt(null);
 
-        $this->repo->save($message);
+            $this->repo->save($message);
+        });
     }
+
 
     /**
      * Marque un message comme lu

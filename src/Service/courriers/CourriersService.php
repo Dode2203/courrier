@@ -5,14 +5,18 @@ namespace App\Service\courriers;
 use App\Entity\courriers\Courriers;
 use App\Repository\courriers\CourriersRepository;
 use App\Service\utils\ValidationService;
+use Doctrine\ORM\EntityManagerInterface;
+
 
 class CourriersService
 {
     public function __construct(
         private readonly CourriersRepository $repo,
-        private readonly ValidationService $validator
+        private readonly ValidationService $validator,
+        private readonly EntityManagerInterface $entityManager
     ) {
     }
+
 
     /**
      * Génère une référence automatique au format JJMMAAAA/REFN
@@ -51,10 +55,13 @@ class CourriersService
      */
     public function save(Courriers $courrier): void
     {
-        if ($courrier->getReference() === null) {
-            $courrier->setReference($this->generateReference());
-        }
+        $this->entityManager->wrapInTransaction(function () use ($courrier) {
+            if ($courrier->getReference() === null) {
+                $courrier->setReference($this->generateReference());
+            }
 
-        $this->repo->save($courrier);
+            $this->repo->save($courrier);
+        });
     }
+
 }
