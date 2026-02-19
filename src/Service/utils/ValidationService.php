@@ -26,4 +26,21 @@ class ValidationService
             throw new InvalidArgumentException($message);
         }
     }
+
+    /**
+     * Valide que les champs requis sont présents dans les données
+     */
+    public function validateRequiredFields(array $data, array $requiredFields): void
+    {
+        $missingFields = [];
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field])) {
+                $missingFields[] = $field;
+            }
+        }
+
+        if (!empty($missingFields)) {
+            throw new InvalidArgumentException("Champs requis manquants : [" . implode(', ', $missingFields) . "]");
+        }
+    }
 }

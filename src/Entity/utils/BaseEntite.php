@@ -67,4 +67,42 @@ abstract class BaseEntite
     {
         $this->dateCreation = new \DateTimeImmutable();
     }
+
+    /**
+     * Convertit l'entité en tableau simple (pour JSON)
+     * Utilise la réflexion pour extraire les propriétés scalaires et les dates.
+     */
+    public function toArray(): array
+    {
+        $reflection = new \ReflectionClass($this);
+        $data = [];
+
+        foreach ($reflection->getProperties() as $property) {
+            $property->setAccessible(true);
+
+            // On vérifie si la propriété est initialisée pour éviter les erreurs 
+            // sur les propriétés typées non nullables.
+            if (!$property->isInitialized($this)) {
+                continue;
+            }
+
+            $value = $property->getValue($this);
+
+            // Formatage des dates
+            if ($value instanceof \DateTimeInterface) {
+                $data[$property->getName()] = $value->format('Y-m-d H:i:s');
+                continue;
+            }
+
+            // On ignore les objets complexes (relations) pour éviter la circularité.
+            // Le développeur doit surcharger toArray() s'il veut inclure des relations.
+            if (is_object($value)) {
+                continue;
+            }
+
+            $data[$property->getName()] = $value;
+        }
+
+        return $data;
+    }
 }
