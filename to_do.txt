@@ -36,3 +36,7 @@ message
         
 
     
+    recherche par (nom,prenom,mail,numero,mail,date_courier)
+    ajouter date pour le courrier
+    multiple fichier sur le piece jointe
+    marquer comme non lu message
