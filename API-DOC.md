@@ -70,59 +70,57 @@ Permet d'obtenir le token JWT nécessaire pour les appels sécurisés.
 *   **Réponse (200 OK)** : renvoie l'objet complet (id, reference, object, description, mail, dateCreation, dateFin).
 
 
-1. Mise à jour : Création de courrier (Format Multipart)
+## 1. Mise à jour : Création de courrier (Format Multipart)
 Comme nous n'utilisons plus de JSON pour ces routes afin de supporter l'upload, il faut changer le Content-Type.
 
-URL : POST /api/courriers/creer
+*   **URL** : `POST /api/courriers/creer`
 
-Headers : Authorization: Bearer <token> (Attention : Ne pas forcer Content-Type: application/json)
+*   **Headers** : `Authorization: Bearer <token> (Attention : Ne pas forcer Content-Type: application/json)`
 
-Body (form-data) :
+*   **Body (form-data)** :
+```
+  mail : etudiant@email.com (text)
 
-mail : etudiant@email.com (string)
+  object : Demande de relevé (text)
 
-object : Demande de relevé (string)
+  description : Détails... (text)
 
-description : Détails... (string)
-
-fichier : [Fichier PDF/Image] (File, max 5 Mo)
-
-Réponse (201 Created) :
-
+  fichier : [Fichier PDF/Image] (File, max 5 Mo)
+```
+* **Réponse (201 Created)** :
 JSON
-
-{
-  "status": "success",
-  "data": { "id": 15, "reference": "19022026/REF1" }
-}
-2. Mise à jour : Créer & Transférer
+```json
+  {
+    "status": "success",
+    "data": { "id": 15, "reference": "19022026/REF1" }
+  }
+```
+##  2. Mise à jour : Créer & Transférer
 Même chose ici, on passe en form-data pour inclure le fichier.
 
-URL : POST /api/courriers/creer-et-transferer
+*   **URL** : `POST /api/courriers/creer-et-transferer`
+*   **Body (form-data)** :
+```
+    mail, object, description (string)
 
-Body (form-data) :
+    destId : 5 (int)
 
-mail, object, description (string)
+    fichier : [Fichier] (File, optionnel)
+```
 
-destId : 5 (int)
-
-fichier : [Fichier] (File, optionnel)
-
-3. NOUVEAU : Récupération du fichier
+## 3. NOUVEAU : Récupération du fichier
 C'est l'endpoint qui permet de voir le document stocké en BLOB.
 
-URL : GET /api/courriers/{id}/fichier
-
-Requirements : {id} doit être un nombre entier.
-
-Headers : Authorization: Bearer <token>
+*   **URL** : `GET /api/courriers/{id}/fichier`
+*   **Requirements** : {id} doit être un nombre entier.
+*   **Headers** : `Authorization: Bearer <token>`
 
 Réponse :
+```
+  Success : Le flux binaire du fichier (affiche le PDF ou l'image directement).
 
-Success : Le flux binaire du fichier (affiche le PDF ou l'image directement).
-
-Error (404) : Si le courrier n'a pas de fichier associé.
-
+  Error (404) : Si le courrier n'a pas de fichier associé.
+```
 
 --- 
 
