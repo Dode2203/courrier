@@ -67,10 +67,11 @@ class MessagesService
     }
 
     /**
-     * Récupère tous les messages reçus par un utilisateur
+     * Récupère les messages reçus par un utilisateur avec pagination
      */
-    public function getAllMessage(int $userId): array
+    public function getAllMessage(int $userId, int $page = 1, int $limit = 10): array
     {
-        return $this->repo->findByUtilisateur($userId);
+        $offset = ($page - 1) * $limit;
+        return $this->repo->findByUtilisateur($userId, $limit, $offset);
     }
 }
