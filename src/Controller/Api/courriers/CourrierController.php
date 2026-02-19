@@ -11,6 +11,8 @@ use App\Service\utils\JwtTokenManager;
 use App\Service\utils\ValidationService;
 use App\Service\messages\MessagesService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Response;
+
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,18 +43,25 @@ class CourrierController extends BaseApiController
             // Vérifie l'utilisateur connecté
             $this->getUserFromRequest($request);
 
-            $data = json_decode($request->getContent(), true);
+            // Pour multipart/form-data, on utilise $request->request et $request->files
+            $data = $request->request->all();
+            $file = $request->files->get('fichier');
 
             // Validation des champs requis
             $this->validator->validateRequiredFields($data, ['mail', 'description', 'object']);
+
+            // Validation de la taille du fichier (5 Mo max)
+            if ($file && $file->getSize() > 5 * 1024 * 1024) {
+                throw new \Exception("Le fichier est trop volumineux (max 5 Mo).", 400);
+            }
 
             $courrier = new Courriers();
             $courrier->setMail($data['mail'])
                 ->setDescription($data['description'])
                 ->setObject($data['object']);
 
-            // Sauvegarde via le service (gère la référence automatique)
-            $this->courriersService->save($courrier);
+            // Sauvegarde via le service (gère la référence automatique et le fichier)
+            $this->courriersService->save($courrier, $file);
 
             return $this->jsonSuccess([
                 'id' => $courrier->getId(),
@@ -73,19 +82,28 @@ class CourrierController extends BaseApiController
     {
         try {
             $user = $this->getUserFromRequest($request);
-            $data = json_decode($request->getContent(), true);
+
+            // Pour multipart/form-data
+            $data = $request->request->all();
+            $file = $request->files->get('fichier');
 
             // Validation des champs requis (incluant destId)
             $this->validator->validateRequiredFields($data, ['mail', 'description', 'object', 'destId']);
 
-            $result = $this->entityManager->wrapInTransaction(function () use ($data, $user) {
+            // Validation de la taille du fichier (5 Mo max)
+            if ($file && $file->getSize() > 5 * 1024 * 1024) {
+                throw new \Exception("Le fichier est trop volumineux (max 5 Mo).", 400);
+            }
+
+            $result = $this->entityManager->wrapInTransaction(function () use ($data, $user, $file) {
                 // 1. Création du courrier
                 $courrier = new Courriers();
                 $courrier->setMail($data['mail'])
                     ->setDescription($data['description'])
                     ->setObject($data['object']);
 
-                $this->courriersService->save($courrier);
+                // Sauvegarde via le service (gère le fichier)
+                $this->courriersService->save($courrier, $file);
 
                 // 2. Transfert immédiat
                 $this->messagesService->envoyerMessage(
@@ -145,6 +163,39 @@ class CourrierController extends BaseApiController
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
     }
+
+    /**
+     * Récupère le fichier associé à un courrier
+     */
+    #[Route('/{id}/fichier', name: 'api_courriers_fichier', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[TokenRequired]
+    public function getFile(int $id, Request $request): Response
+    {
+        try {
+            $this->getUserFromRequest($request);
+            $courrier = $this->courriersService->getCourrierById($id);
+
+            $this->validator->throwIfNull($courrier, "Courrier introuvable.");
+            $fichier = $courrier->getFichier();
+
+            if (!$fichier || !$fichier->getBinaire()) {
+                throw new \Exception("Aucun fichier n'est associé à ce courrier.", 404);
+            }
+
+            $response = new Response(stream_get_contents($fichier->getBinaire()));
+            $response->headers->set('Content-Type', $fichier->getType());
+            $response->headers->set('Content-Disposition', 'inline; filename="' . $fichier->getNom() . '"');
+
+            return $response;
+
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], $e->getCode() ?: 400);
+        }
+    }
+
 
 
 }
