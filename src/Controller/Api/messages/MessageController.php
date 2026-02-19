@@ -33,11 +33,19 @@ class MessageController extends BaseApiController
     {
         try {
             $user = $this->getUserFromRequest($request);
-            $messages = $this->messagesService->getAllMessage($user->getId());
+
+            $page = (int) $request->query->get('page', 1);
+            $limit = (int) $request->query->get('limit', 10);
+
+            $messages = $this->messagesService->getAllMessage($user->getId(), $page, $limit);
 
             $data = array_map(fn($m) => $m->toArray(), $messages);
 
-            return $this->jsonSuccess($data);
+            return $this->jsonSuccess([
+                'messages' => $data,
+                'page' => $page,
+                'limit' => $limit
+            ]);
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -71,7 +79,7 @@ class MessageController extends BaseApiController
     /**
      * Marque un message comme lu
      */
-    #[Route('/{id}/lire', name: 'api_messages_lire', methods: ['PATCH'])]
+    #[Route('/{id}/lire', name: 'api_messages_lire', methods: ['PATCH'], requirements: ['id' => '\d+'])]
     #[TokenRequired]
     public function lire(int $id, Request $request): JsonResponse
     {
