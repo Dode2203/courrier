@@ -40,6 +40,26 @@ class CourriersService
      */
     public function getCourrierById(int $id): ?Courriers
     {
+        return $this->repo->getById($id);
+    }
+
+    /**
+     * Supprime logiquement un courrier
+     */
+    public function supprimerCourrier(int $id): void
+    {
+        $courrier = $this->getByIdRaw($id);
+        $this->validator->throwIfNull($courrier, "Courrier avec l'id $id introuvable.");
+
+        $courrier->delete();
+        $this->repo->save($courrier);
+    }
+
+    /**
+     * Récupère un courrier même s'il est supprimé (interne)
+     */
+    private function getByIdRaw(int $id): ?Courriers
+    {
         return $this->repo->find($id);
     }
 
@@ -56,22 +76,37 @@ class CourriersService
     }
 
     /**
-     * Sauvegarde un courrier avec génération de référence si nécessaire
+     * Sauvegarde un courrier avec génération de référence si nécessaire et multi-fichiers
+     * 
+     * @param Courriers $courrier
+     * @param UploadedFile[] $files
      */
-    public function save(Courriers $courrier, ?UploadedFile $file = null): void
+    public function save(Courriers $courrier, array $files = []): void
     {
-        $this->entityManager->wrapInTransaction(function () use ($courrier, $file) {
+        // 1. Validation pré-transaction (Atomicité métier)
+        foreach ($files as $file) {
+            if ($file && $file->getSize() > 5 * 1024 * 1024) {
+                throw new \Exception("Le fichier '" . $file->getClientOriginalName() . "' est trop volumineux (max 5 Mo).", 400);
+            }
+        }
+
+        // 2. Transaction
+        $this->entityManager->wrapInTransaction(function () use ($courrier, $files) {
             if ($courrier->getReference() === null) {
                 $courrier->setReference($this->generateReference());
             }
 
-            if ($file) {
-                $fichierEntity = $this->fichiersService->saveToBlob($file);
-                $this->entityManager->persist($fichierEntity);
-                $courrier->setFichier($fichierEntity);
-            }
-
+            // Persistance du courrier d'abord
             $this->repo->save($courrier);
+
+            // Persistance de chaque fichier lié
+            foreach ($files as $file) {
+                if ($file instanceof UploadedFile) {
+                    $fichierEntity = $this->fichiersService->saveToBlob($file);
+                    $fichierEntity->setCourrier($courrier);
+                    $this->entityManager->persist($fichierEntity);
+                }
+            }
         });
     }
 

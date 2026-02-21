@@ -18,7 +18,18 @@ class CourriersRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.reference = :ref')
+            ->andWhere('c.deletedAt IS NULL')
             ->setParameter('ref', $reference)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function getById(int $id): ?Courriers
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.id = :id')
+            ->andWhere('c.deletedAt IS NULL')
+            ->setParameter('id', $id)
             ->getQuery()
             ->getOneOrNullResult();
     }

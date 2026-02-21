@@ -111,4 +111,21 @@ class MessageController extends BaseApiController
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
     }
+
+    /**
+     * Supprime logiquement un message (Soft Delete)
+     */
+    #[Route('/{id}', name: 'api_messages_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    #[TokenRequired]
+    public function delete(int $id, Request $request): JsonResponse
+    {
+        try {
+            $this->getUserFromRequest($request);
+            $this->messagesService->supprimerMessage($id);
+
+            return $this->jsonSuccess(['message' => 'Message supprimé avec succès.']);
+        } catch (\Throwable $e) {
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
+        }
+    }
 }

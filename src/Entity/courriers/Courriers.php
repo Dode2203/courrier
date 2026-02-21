@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\courriers\CourriersRepository;
 use App\Entity\utils\Fichiers;
 use App\Entity\utils\BaseEntite;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: CourriersRepository::class)]
 class Courriers extends BaseEntite
@@ -24,13 +26,17 @@ class Courriers extends BaseEntite
     #[ORM\Column(type: "string", length: 100, nullable: false)]
     private ?string $mail = null;
 
-    // Relation ManyToOne vers Fichier
-    #[ORM\ManyToOne(targetEntity: Fichiers::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
-    private ?Fichiers $fichier = null;
+    #[ORM\OneToMany(mappedBy: 'courrier', targetEntity: Fichiers::class, cascade: ['persist', 'remove'])]
+    private Collection $fichiers;
 
     #[ORM\Column(type: "datetime_immutable", nullable: true)]
     private ?\DateTimeImmutable $dateFin = null;
+
+
+    public function __construct()
+    {
+        $this->fichiers = new ArrayCollection();
+    }
 
 
     public function getReference(): ?string
@@ -76,14 +82,33 @@ class Courriers extends BaseEntite
         return $this;
     }
 
-    public function getFichier(): ?Fichiers
+    /**
+     * @return Collection<int, Fichiers>
+     */
+    public function getFichiers(): Collection
     {
-        return $this->fichier;
+        return $this->fichiers;
     }
 
-    public function setFichier(?Fichiers $fichier): self
+    public function addFichier(Fichiers $fichier): self
     {
-        $this->fichier = $fichier;
+        if (!$this->fichiers->contains($fichier)) {
+            $this->fichiers->add($fichier);
+            $fichier->setCourrier($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFichier(Fichiers $fichier): self
+    {
+        if ($this->fichiers->removeElement($fichier)) {
+            // set the owning side to null (unless already changed)
+            if ($fichier->getCourrier() === $this) {
+                $fichier->setCourrier(null);
+            }
+        }
+
         return $this;
     }
 
@@ -98,20 +123,21 @@ class Courriers extends BaseEntite
         return $this;
     }
 
-    // public function toArray(): array
-    // {
-    //     return [
-    //         'id' => $this->getId(),
-    //         'reference' => $this->reference,
-    //         'object' => $this->object,
-    //         'description' => $this->description,
-    //         'mail' => $this->mail,
-    //         'dateFin' => $this->dateFin ? $this->dateFin->format('Y-m-d H:i:s') : null,
-    //         'dateCreation' => $this->getDateCreation() ? $this->getDateCreation()->format('Y-m-d H:i:s') : null,
-    //         'fichier' => $this->fichier ? [
-    //             'id' => $this->fichier->getId(),
-    //             'nom' => $this->fichier->getNom(), // Suppression de l'erreur potentielle si Fichiers a getNom
-    //         ] : null,
-    //     ];
-    // }
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'reference' => $this->reference,
+            'object' => $this->object,
+            'description' => $this->description,
+            'mail' => $this->mail,
+            'dateFin' => $this->dateFin ? $this->dateFin->format('Y-m-d H:i:s') : null,
+            'dateCreation' => $this->getDateCreation() ? $this->getDateCreation()->format('Y-m-d H:i:s') : null,
+            'fichiers' => $this->fichiers->map(fn(Fichiers $f) => [
+                'id' => $f->getId(),
+                'nom' => $f->getNom(),
+                'type' => $f->getType(),
+            ])->toArray(),
+        ];
+    }
 }

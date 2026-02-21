@@ -262,7 +262,7 @@ Met à jour les informations d'un utilisateur existant.
 
 Crée un nouveau courrier, avec upload optionnel d'un fichier joint.
 
-- **Content-Type :** `multipart/form-data` ⚠️ (obligatoire pour le champ `fichier`)
+- **Content-Type :** `multipart/form-data` ⚠️ (obligatoire pour le champ `fichiers[]`)
 - **Accès :** Tout utilisateur authentifié
 
 #### Champs du formulaire
@@ -272,7 +272,7 @@ Crée un nouveau courrier, avec upload optionnel d'un fichier joint.
 | `mail`        | `string`          | ✅     | Email de l'expéditeur    |
 | `object`      | `string`          | ✅     | Objet du courrier        |
 | `description` | `string`          | ✅     | Description du courrier  |
-| `fichier`     | `file` (binaire)  | ❌     | Taille max : **5 Mo**    |
+| `fichiers[]`  | `file[]` (binaire)| ❌     | Taille max : **5 Mo / fichier** |
 
 #### Réponse — `201 Created`
 
@@ -299,7 +299,7 @@ Crée un nouveau courrier, avec upload optionnel d'un fichier joint.
 
 Crée un courrier **et** le transfère immédiatement à un destinataire en une seule opération atomique.
 
-- **Content-Type :** `multipart/form-data` ⚠️ (obligatoire pour le champ `fichier`)
+- **Content-Type :** `multipart/form-data` ⚠️ (obligatoire pour le champ `fichiers[]`)
 - **Accès :** Tout utilisateur authentifié
 
 #### Champs du formulaire
@@ -310,7 +310,7 @@ Crée un courrier **et** le transfère immédiatement à un destinataire en une 
 | `object`      | `string`          | ✅     | Objet du courrier        |
 | `description` | `string`          | ✅     | Description du courrier  |
 | `destId`      | `integer`         | ✅     | ID du destinataire       |
-| `fichier`     | `file` (binaire)  | ❌     | Taille max : **5 Mo**    |
+| `fichiers[]`  | `file[]` (binaire)| ❌     | Taille max : **5 Mo / fichier** |
 
 #### Réponse — `201 Created`
 
@@ -334,6 +334,54 @@ Crée un courrier **et** le transfère immédiatement à un destinataire en une 
 
 ---
 
+### `GET /api/courriers/{id}/fichiers`
+
+Liste les métadonnées de toutes les pièces jointes d'un courrier.
+
+- **Contrainte d'URL :** `{id}` doit être un entier positif (`\d+`)
+- **Accès :** Tout utilisateur authentifié
+
+#### Réponse — `200 OK`
+
+```json
+{
+  "status": "success",
+  "data": {
+    "fichiers": [
+      {
+        "id": 101,
+        "nom": "scan_facture.pdf",
+        "type": "application/pdf",
+        "dateCreation": "2026-02-21 10:00:00"
+      },
+      {
+        "id": 102,
+        "nom": "photo_justificatif.jpg",
+        "type": "image/jpeg",
+        "dateCreation": "2026-02-21 10:05:00"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### `GET /api/fichiers/{id}/download`
+
+Télécharge le binaire d'un fichier spécifique par son ID.
+
+- **Contrainte d'URL :** `{id}` doit être un entier positif (`\d+`)
+- **Accès :** Tout utilisateur authentifié
+
+#### Réponse — `200 OK`
+
+- **Content-Type :** Dynamique (ex: `application/pdf`, `image/png`)
+- **Corps :** Contenu binaire du fichier
+- **Header :** `Content-Disposition: attachment; filename="..."`
+
+---
+
 ### `GET /api/courriers/{id}`
 
 Retourne les détails d'un courrier par son ID.
@@ -353,18 +401,43 @@ Retourne les détails d'un courrier par son ID.
     "description": "Dossier de candidature pour la bourse ESPA 2026",
     "mail": "etudiant@example.mg",
     "dateFin": null,
-    "dateCreation": "2026-02-21 06:00:00"
+    "dateCreation": "2026-02-21 06:00:00",
+    "fichiers": [
+      {
+        "id": 101,
+        "nom": "scan_facture.pdf",
+        "type": "application/pdf"
+      }
+    ]
   }
 }
 ```
 
-> **Note :** Le champ `fichier` (objet relation) est exclu de la réponse car renvoyé via un endpoint dédié (`GET /api/courriers/{id}/fichier`).
+> **Note :** Le champ `fichiers` contient une liste simplifiée. Pour les métadonnées complètes, utilisez `GET /api/courriers/{id}/fichiers`. Pour le téléchargement, utilisez `GET /api/fichiers/{id}/download`.
 
 #### Erreurs
 
-| Code  | Message                              | Cause                     |
-|-------|--------------------------------------|---------------------------|
-| `404` | `Courrier avec l'ID X introuvable.`  | Aucun courrier avec cet ID |
+| `404` | `Courrier avec l'ID X introuvable.`  | Aucun courrier avec cet ID ou courrier supprimé |
+
+---
+
+### `DELETE /api/courriers/{id}`
+
+Supprime logiquement un courrier (Soft Delete). Le courrier ne sera plus visible via `GET /api/courriers/{id}`.
+
+- **Contrainte d'URL :** `{id}` doit être un entier positif
+- **Accès :** Tout utilisateur authentifié
+
+#### Réponse — `200 OK`
+
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Courrier supprimé avec succès."
+  }
+}
+```
 
 ---
 
@@ -565,9 +638,47 @@ Marque un message spécifique comme **lu** (enregistre la date et l'heure de lec
 
 #### Erreurs
 
-| Code  | Message               | Cause                      |
-|-------|-----------------------|----------------------------|
 | `404` | `Message introuvable` | Aucun message avec cet ID  |
+
+---
+
+### `PATCH /api/messages/{id}/non-lu`
+
+Marque un message spécifique comme **non lu** (réinitialise `isReadAt` à `null`).
+
+- **Contrainte d'URL :** `{id}` doit être un entier positif
+- **Accès :** Tout utilisateur authentifié
+
+#### Réponse — `200 OK`
+
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Message marqué comme non lu."
+  }
+}
+```
+
+---
+
+### `DELETE /api/messages/{id}`
+
+Supprime logiquement un message (Soft Delete). Le message n'apparaîtra plus dans les listes (`received`, `sent`, `all`).
+
+- **Contrainte d'URL :** `{id}` doit être un entier positif
+- **Accès :** Tout utilisateur authentifié
+
+#### Réponse — `200 OK`
+
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Message supprimé avec succès."
+  }
+}
+```
 
 ---
 
@@ -584,7 +695,11 @@ Marque un message spécifique comme **lu** (enregistre la date et l'heure de lec
 | `POST`   | `/api/courriers/creerTransferer`      | `multipart/form-data`   | ✅ Token     | Crée un courrier et le transfère         |
 | `GET`    | `/api/courriers/{id}`                 | —                       | ✅ Token     | Détails d'un courrier                    |
 | `POST`   | `/api/courriers/{id}/cloturer`        | —                       | ✅ Token     | Clôture un dossier et notifie par mail   |
-| `GET`    | `/api/courriers/{id}/fichier`         | —                       | ✅ Token     | Retourne le fichier binaire joint        |
+| `GET`    | `/api/courriers/{id}/fichiers`        | —                       | ✅ Token     | Liste les métadonnées des pièces jointes |
+| `GET`    | `/api/fichiers/{id}/download`         | —                       | ✅ Token     | Télécharge un fichier par son ID         |
+| `DELETE` | `/api/courriers/{id}`                 | —                       | ✅ Token     | Supprime logiquement un courrier         |
 | `GET`    | `/api/messages`                       | —                       | ✅ Token     | Liste les messages reçus (paginés)       |
 | `POST`   | `/api/messages/transferer`            | `application/json`      | ✅ Token     | Transfère un courrier à un utilisateur   |
 | `PATCH`  | `/api/messages/{id}/lire`             | —                       | ✅ Token     | Marque un message comme lu              |
+| `PATCH`  | `/api/messages/{id}/non-lu`           | —                       | ✅ Token     | Marque un message comme non lu          |
+| `DELETE` | `/api/messages/{id}`                 | —                       | ✅ Token     | Supprime logiquement un message (Soft Delete) |
