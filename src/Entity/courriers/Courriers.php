@@ -26,6 +26,12 @@ class Courriers extends BaseEntite
     #[ORM\Column(type: "string", length: 100, nullable: false)]
     private ?string $mail = null;
 
+    #[ORM\Column(type: "string", length: 255, nullable: false)]
+    private ?string $nom = null;
+
+    #[ORM\Column(type: "string", length: 255, nullable: false)]
+    private ?string $prenom = null;
+
     #[ORM\OneToMany(mappedBy: 'courrier', targetEntity: Fichiers::class, cascade: ['persist', 'remove'])]
     private Collection $fichiers;
 
@@ -82,6 +88,28 @@ class Courriers extends BaseEntite
         return $this;
     }
 
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): self
+    {
+        $this->nom = $nom;
+        return $this;
+    }
+
+    public function getPrenom(): ?string
+    {
+        return $this->prenom;
+    }
+
+    public function setPrenom(string $prenom): self
+    {
+        $this->prenom = $prenom;
+        return $this;
+    }
+
     /**
      * @return Collection<int, Fichiers>
      */
@@ -131,6 +159,8 @@ class Courriers extends BaseEntite
             'object' => $this->object,
             'description' => $this->description,
             'mail' => $this->mail,
+            'nom' => $this->nom,
+            'prenom' => $this->prenom,
             'dateFin' => $this->dateFin ? $this->dateFin->format('Y-m-d H:i:s') : null,
             'dateCreation' => $this->getDateCreation() ? $this->getDateCreation()->format('Y-m-d H:i:s') : null,
             'fichiers' => $this->fichiers->map(fn(Fichiers $f) => [

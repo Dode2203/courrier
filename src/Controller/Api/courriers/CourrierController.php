@@ -50,12 +50,14 @@ class CourrierController extends BaseApiController
             }
             $uploadedFiles = $files ?? [];
 
-            $this->validator->validateRequiredFields($data, ['mail', 'description', 'object']);
+            $this->validator->validateRequiredFields($data, ['mail', 'description', 'object', 'nom', 'prenom']);
 
             $courrier = new Courriers();
             $courrier->setMail($data['mail'])
                 ->setDescription($data['description'])
-                ->setObject($data['object']);
+                ->setObject($data['object'])
+                ->setNom($data['nom'])
+                ->setPrenom($data['prenom']);
 
             $this->courriersService->save($courrier, $uploadedFiles);
 
@@ -86,13 +88,15 @@ class CourrierController extends BaseApiController
             }
             $uploadedFiles = $files ?? [];
 
-            $this->validator->validateRequiredFields($data, ['mail', 'description', 'object', 'destId']);
+            $this->validator->validateRequiredFields($data, ['mail', 'description', 'object', 'destId', 'nom', 'prenom']);
 
             $result = $this->entityManager->wrapInTransaction(function () use ($data, $user, $uploadedFiles) {
                 $courrier = new Courriers();
                 $courrier->setMail($data['mail'])
                     ->setDescription($data['description'])
-                    ->setObject($data['object']);
+                    ->setObject($data['object'])
+                    ->setNom($data['nom'])
+                    ->setPrenom($data['prenom']);
 
                 $this->courriersService->save($courrier, $uploadedFiles);
 
