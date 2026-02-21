@@ -119,6 +119,28 @@ class CourrierController extends BaseApiController
         }
     }
 
+    #[Route('/recherche', name: 'api_courriers_recherche', methods: ['GET'])]
+    #[TokenRequired]
+    public function recherche(Request $request): JsonResponse
+    {
+        try {
+            $this->getUserFromRequest($request);
+            $nom = $request->query->get('nom');
+            $prenom = $request->query->get('prenom');
+
+            if (!$nom && !$prenom) {
+                return $this->jsonError("Veuillez fournir au moins un critère de recherche (nom ou prénom).", 400);
+            }
+
+            $courriers = $this->courriersService->recherche($nom, $prenom);
+            $data = array_map(fn(Courriers $c) => $c->toArray(), $courriers);
+
+            return $this->jsonSuccess(['courriers' => $data]);
+        } catch (\Throwable $e) {
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
+        }
+    }
+
     #[Route('/{id}', name: 'api_courriers_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     #[TokenRequired]
     public function show(int $id, Request $request): JsonResponse

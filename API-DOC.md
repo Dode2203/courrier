@@ -386,6 +386,50 @@ Télécharge le binaire d'un fichier spécifique par son ID.
 
 ---
 
+---
+
+### `GET /api/courriers/recherche`
+
+Recherche ciblée des courriers par nom et/ou prénom du déposant (**Insensible à la casse**).
+
+- **Paramètres de requête (Query String) :**
+    - `nom` (string, optionnel) : Nom du déposant (partiel ou complet).
+    - `prenom` (string, optionnel) : Prénom du déposant (partiel ou complet).
+- **Note :** Au moins un des deux paramètres doit être fourni.
+- **Accès :** Tout utilisateur authentifié
+
+#### Réponse — `200 OK`
+
+```json
+{
+  "status": "success",
+  "data": {
+    "courriers": [
+      {
+        "id": 42,
+        "reference": "21022026/REF1",
+        "nom": "RAKOTO",
+        "prenom": "Jean",
+        "object": "Demande de bourse",
+        "description": "...",
+        "mail": "rakoto@example.mg",
+        "dateCreation": "2026-02-21 06:00:00",
+        "dateFin": null,
+        "fichiers": []
+      }
+    ]
+  }
+}
+```
+
+#### Erreurs
+
+| Code  | Message                                                  | Cause                                    |
+|-------|----------------------------------------------------------|------------------------------------------|
+| `400` | `Veuillez fournir au moins un critère de recherche...`   | Paramètres `nom` et `prenom` absents      |
+
+---
+
 ### `GET /api/courriers/{id}`
 
 Retourne les détails d'un courrier par son ID.
@@ -697,6 +741,7 @@ Supprime logiquement un message (Soft Delete). Le message n'apparaîtra plus dan
 | `PUT`    | `/utilisateur/{id}`                   | `application/json`      | ✅ Admin     | Mise à jour d'un utilisateur             |
 | `POST`   | `/api/courriers/creer`                | `multipart/form-data`   | ✅ Token     | Crée un courrier                         |
 | `POST`   | `/api/courriers/creerTransferer`      | `multipart/form-data`   | ✅ Token     | Crée un courrier et le transfère         |
+| `GET`    | `/api/courriers/recherche`            | —                       | ✅ Token     | Recherche par nom ou prénom              |
 | `GET`    | `/api/courriers/{id}`                 | —                       | ✅ Token     | Détails d'un courrier                    |
 | `POST`   | `/api/courriers/{id}/cloturer`        | —                       | ✅ Token     | Clôture un dossier et notifie par mail   |
 | `GET`    | `/api/courriers/{id}/fichiers`        | —                       | ✅ Token     | Liste les métadonnées des pièces jointes |

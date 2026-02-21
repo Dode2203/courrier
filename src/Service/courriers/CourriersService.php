@@ -100,6 +100,12 @@ class CourriersService
                 $courrier->setReference($this->generateReference());
             }
 
+            // Normalisation des identités
+            $courrier->setNom(mb_strtoupper($courrier->getNom()));
+            if ($courrier->getPrenom()) {
+                $courrier->setPrenom(mb_convert_case($courrier->getPrenom(), MB_CASE_TITLE));
+            }
+
             // Persistance du courrier d'abord
             $this->repo->save($courrier);
 
@@ -112,6 +118,15 @@ class CourriersService
                 }
             }
         });
+    }
+
+    /**
+     * Recherche des courriers par nom ou prénom
+     * @return Courriers[]
+     */
+    public function recherche(?string $nom, ?string $prenom): array
+    {
+        return $this->repo->searchByCriteria($nom, $prenom);
     }
 
 }

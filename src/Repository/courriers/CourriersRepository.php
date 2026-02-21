@@ -58,4 +58,26 @@ class CourriersRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    /**
+     * Recherche de courriers par nom et/ou prénom (insensible à la casse)
+     * @return Courriers[]
+     */
+    public function searchByCriteria(?string $nom, ?string $prenom): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->andWhere('c.deletedAt IS NULL');
+
+        if ($nom) {
+            $qb->andWhere('LOWER(c.nom) LIKE :nom')
+                ->setParameter('nom', '%' . mb_strtolower($nom) . '%');
+        }
+
+        if ($prenom) {
+            $qb->andWhere('LOWER(c.prenom) LIKE :prenom')
+                ->setParameter('prenom', '%' . mb_strtolower($prenom) . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }

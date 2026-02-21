@@ -27,9 +27,9 @@ class Courriers extends BaseEntite
     private ?string $mail = null;
 
     #[ORM\Column(type: "string", length: 255, nullable: false)]
-    private ?string $nom = null;
+    private ?string $nom;
 
-    #[ORM\Column(type: "string", length: 255, nullable: false)]
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $prenom = null;
 
     #[ORM\OneToMany(mappedBy: 'courrier', targetEntity: Fichiers::class, cascade: ['persist', 'remove'])]
