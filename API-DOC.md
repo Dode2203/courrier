@@ -439,18 +439,28 @@ Content-Disposition: inline; filename="courrier-espa-2026.pdf"
 
 ### `GET /api/messages`
 
-Liste tous les messages reçus par l'utilisateur connecté, avec pagination.
+Liste les messages de l'utilisateur connecté, avec filtre de direction et pagination.
 
 - **Accès :** Tout utilisateur authentifié
 
 #### Paramètres de requête (Query String)
 
-| Paramètre | Type      | Défaut | Description                        |
-|-----------|-----------|--------|------------------------------------|
-| `page`    | `integer` | `1`    | Numéro de la page à afficher       |
-| `limit`   | `integer` | `10`   | Nombre de messages par page        |
+| Paramètre | Type      | Défaut       | Valeurs possibles              | Description                            |
+|-----------|-----------|--------------|--------------------------------|----------------------------------------|
+| `type`    | `string`  | `received`   | `received`, `sent`, `all`      | Filtre de direction des messages        |
+| `page`    | `integer` | `1`          | —                              | Numéro de la page à afficher           |
+| `limit`   | `integer` | `10`         | —                              | Nombre de messages par page            |
 
-**Exemple :** `GET /api/messages?page=2&limit=5`
+| Valeur `type` | Description                                         |
+|---------------|-----------------------------------------------------|
+| `received`    | **(défaut)** Messages où l'utilisateur est destinataire |
+| `sent`        | Messages où l'utilisateur est expéditeur            |
+| `all`         | Boîte de réception + messages envoyés               |
+
+**Exemples :**
+- `GET /api/messages` → messages reçus, page 1
+- `GET /api/messages?type=sent` → messages envoyés
+- `GET /api/messages?type=all&page=2&limit=5` → tous les messages, page 2
 
 #### Réponse — `200 OK`
 
@@ -481,12 +491,14 @@ Liste tous les messages reçus par l'utilisateur connecté, avec pagination.
       }
     ],
     "page": 1,
-    "limit": 10
+    "limit": 10,
+    "type": "received"
   }
 }
 ```
 
 > **Note :** `isReadAt` est `null` si le message n'a pas encore été lu. La date est au format `Y-m-d H:i:s` si le message a été lu.
+
 
 ---
 

@@ -36,15 +36,17 @@ class MessageController extends BaseApiController
 
             $page = (int) $request->query->get('page', 1);
             $limit = (int) $request->query->get('limit', 10);
+            $type = $request->query->get('type', 'received'); // 'received' | 'sent' | 'all'
 
-            $messages = $this->messagesService->getAllMessage($user->getId(), $page, $limit);
+            $messages = $this->messagesService->getAllMessage($user->getId(), $page, $limit, $type);
 
             $data = array_map(fn($m) => $m->toArray(), $messages);
 
             return $this->jsonSuccess([
                 'messages' => $data,
                 'page' => $page,
-                'limit' => $limit
+                'limit' => $limit,
+                'type' => $type,
             ]);
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
@@ -88,6 +90,23 @@ class MessageController extends BaseApiController
             $this->messagesService->lireMessage($id);
 
             return $this->jsonSuccess(['message' => 'Message marqué comme lu.']);
+        } catch (\Throwable $e) {
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
+        }
+    }
+
+    /**
+     * Marque un message comme non lu (réinitialise isReadAt à null)
+     */
+    #[Route('/{id}/non-lu', name: 'api_messages_non_lu', methods: ['PATCH'], requirements: ['id' => '\d+'])]
+    #[TokenRequired]
+    public function nonLu(int $id, Request $request): JsonResponse
+    {
+        try {
+            $this->getUserFromRequest($request);
+            $this->messagesService->marquerNonLu($id);
+
+            return $this->jsonSuccess(['message' => 'Message marqué comme non lu.']);
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }

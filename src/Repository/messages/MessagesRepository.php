@@ -65,17 +65,22 @@ class MessagesRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function findByUtilisateur(int $userId, int $limit = 10, int $offset = 0): array
+    public function findByUtilisateur(int $userId, int $limit = 10, int $offset = 0, string $type = 'received'): array
     {
-        return $this->createQueryBuilder('m')
-            ->andWhere('m.destinataire = :userId')
+        $qb = $this->createQueryBuilder('m')
             ->andWhere('m.deletedAt IS NULL')
             ->setParameter('userId', $userId)
             ->orderBy('m.dateCreation', 'DESC')
             ->setMaxResults($limit)
-            ->setFirstResult($offset)
-            ->getQuery()
-            ->getResult();
+            ->setFirstResult($offset);
+
+        match ($type) {
+            'sent' => $qb->andWhere('m.expediteur = :userId'),
+            'all' => $qb->andWhere('m.destinataire = :userId OR m.expediteur = :userId'),
+            default => $qb->andWhere('m.destinataire = :userId'), // 'received'
+        };
+
+        return $qb->getQuery()->getResult();
     }
 
 }
