@@ -83,9 +83,11 @@ class CourriersService
      */
     public function save(Courriers $courrier, array $files = []): void
     {
-        if (!$courrier->getNom() || !$courrier->getPrenom()) {
-            throw new \Exception("Le nom et le prénom du déposant sont obligatoires.", 400);
-        }
+
+        $this->validator->throwIfNull($courrier->getNom(), "Le nom du déposant est obligatoire.");
+        // if (!$courrier->getNom() || !$courrier->getPrenom()) {
+        //     throw new \Exception("Le nom et le prénom du déposant sont obligatoires.", 400);
+        // }
 
         // 1. Validation pré-transaction (Atomicité métier)
         foreach ($files as $file) {

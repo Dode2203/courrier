@@ -280,7 +280,7 @@ Crée un nouveau courrier, avec upload optionnel d'un fichier joint.
 |---------------|-------------------|--------|--------------------------|
 | `mail`        | `string`          | ✅     | Email de l'expéditeur    |
 | `nom`         | `string`          | ✅     | Nom du déposant          |
-| `prenom`      | `string`          | ✅     | Prénom du déposant       |
+| `prenom`      | `string`          | ❌     | Prénom du déposant       |
 | `object`      | `string`          | ✅     | Objet du courrier        |
 | `description` | `string`          | ✅     | Description du courrier  |
 | `fichiers[]`  | `file[]` (binaire)| ❌     | Taille max : **5 Mo / fichier** |
@@ -319,7 +319,7 @@ Crée un courrier **et** le transfère immédiatement à un destinataire en une 
 |---------------|-------------------|--------|--------------------------|
 | `mail`        | `string`          | ✅     | Email de l'expéditeur    |
 | `nom`         | `string`          | ✅     | Nom du déposant          |
-| `prenom`      | `string`          | ✅     | Prénom du déposant       |
+| `prenom`      | `string`          | ❌     | Prénom du déposant       |
 | `object`      | `string`          | ✅     | Objet du courrier        |
 | `description` | `string`          | ✅     | Description du courrier  |
 | `destId`      | `integer`         | ✅     | ID du destinataire       |

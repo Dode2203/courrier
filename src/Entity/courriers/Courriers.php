@@ -104,7 +104,7 @@ class Courriers extends BaseEntite
         return $this->prenom;
     }
 
-    public function setPrenom(string $prenom): self
+    public function setPrenom(?string $prenom): self
     {
         $this->prenom = $prenom;
         return $this;
