@@ -76,7 +76,7 @@ class CourrierController extends BaseApiController
     /**
      * Crée un courrier et le transfère immédiatement à un destinataire
      */
-    #[Route('/creer-et-transferer', name: 'api_courriers_creer_transferer', methods: ['POST'])]
+    #[Route('/creerEtTransferer', name: 'api_courriers_creer_transferer', methods: ['POST'])]
     #[TokenRequired]
     public function creerEtTransferer(Request $request): JsonResponse
     {

@@ -31,10 +31,6 @@ message
                 getAllMessage(utilisateurId)
             mailService
                 envoyerMail(courrierId) -- update date_fin
-        
-        
-        
-
     
     recherche par (nom,prenom,mail,numero,mail,date_courier)
     ajouter date pour le courrier

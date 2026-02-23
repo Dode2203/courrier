@@ -98,7 +98,7 @@ JSON
 2. Mise à jour : Créer & Transférer
 Même chose ici, on passe en form-data pour inclure le fichier.
 
-URL : POST /api/courriers/creer-et-transferer
+URL : POST /api/courriers/creerEtTransferer 
 
 Body (form-data) :
 
@@ -150,7 +150,7 @@ Récupère les messages reçus par l'utilisateur connecté avec support de la pa
         "status": "success",
         "data": 
         {
-            "messages": [
+            
                 {
                     "id": 1,
                     "courrier": {
@@ -171,10 +171,11 @@ Récupère les messages reçus par l'utilisateur connecté avec support de la pa
                     "isReadAt": null,
                     "dateCreation": "2024-02-19 10:05:00"
                 }
-            ],
-            "page": 1,
-            "limit": 10
-        }
+            
+            
+        },
+        "page": 1,
+        "limit": 10
     }
     ```
 
