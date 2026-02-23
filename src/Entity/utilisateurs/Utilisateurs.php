@@ -21,6 +21,9 @@ class Utilisateurs extends BaseEntite
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $adresse = null;
+
     #[ORM\ManyToOne(targetEntity: Roles::class)]
     #[ORM\JoinColumn(nullable: false)]
     private ?Roles $role = null;
@@ -78,5 +81,24 @@ class Utilisateurs extends BaseEntite
     {
         $this->role = $role;
         return $this;
+    }
+
+    public function getAdresse(): ?string
+    {
+        return $this->adresse;
+    }
+
+    public function setAdresse(?string $adresse): static
+    {
+        $this->adresse = $adresse;
+        return $this;
+    }
+
+    public function toArray(): array
+    {
+        $data = parent::toArray();
+        $data['adresse'] = $this->getAdresse();
+        $data['role'] = $this->getRole() ? $this->getRole()->getName() : null;
+        return $data;
     }
 }

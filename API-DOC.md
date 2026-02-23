@@ -87,7 +87,8 @@ Authentifie un utilisateur et retourne un token JWT.
       "email": "admin@espa.mg",
       "role": "Admin",
       "nom": "Rakoto",
-      "prenom": "Jean"
+      "prenom": "Jean",
+      "adresse": "Lot II M 45 Isoraka"
     },
     "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
   }
@@ -128,6 +129,7 @@ Liste tous les utilisateurs enregistrés.
       "email": "admin@espa.mg",
       "nom": "Rakoto",
       "prenom": "Jean",
+      "adresse": "Lot II M 45 Isoraka",
       "role": "Admin"
     },
     {
@@ -135,6 +137,7 @@ Liste tous les utilisateurs enregistrés.
       "email": "user@espa.mg",
       "nom": "Rabe",
       "prenom": "Marie",
+      "adresse": "Lot IV G 12 Antanimena",
       "role": "Utilisateur"
     }
   ]
@@ -157,6 +160,7 @@ Crée un nouvel utilisateur.
   "email": "nouveau@espa.mg",
   "nom": "Ranaivo",
   "prenom": "Paul",
+  "adresse": "Lot III F 22 Ankorondrano",
   "mdp": "motdepasse",
   "role": "Utilisateur"
 }
@@ -167,6 +171,7 @@ Crée un nouvel utilisateur.
 | `email`  | `string` | ✅     | Adresse email unique               |
 | `nom`    | `string` | ✅     | Nom de famille                     |
 | `prenom` | `string` | ✅     | Prénom                             |
+| `adresse`| `string` | ❌     | Adresse (nullable)                 |
 | `mdp`    | `string` | ✅     | Mot de passe en clair              |
 | `role`   | `string` | ✅     | Rôle : `"Admin"` ou `"Utilisateur"` |
 
@@ -179,7 +184,8 @@ Crée un nouvel utilisateur.
     "id": 3,
     "email": "nouveau@espa.mg",
     "nom": "Ranaivo",
-    "prenom": "Paul"
+    "prenom": "Paul",
+    "adresse": "Lot III F 22 Ankorondrano"
   }
 }
 ```
@@ -203,6 +209,7 @@ Retourne les détails d'un utilisateur.
     "email": "user@espa.mg",
     "nom": "Rabe",
     "prenom": "Marie",
+    "adresse": "Lot IV G 12 Antanimena",
     "role": "Utilisateur"
   }
 }
@@ -231,6 +238,7 @@ Met à jour les informations d'un utilisateur existant.
   "nom": "Nouveau Nom",
   "prenom": "Nouveau Prénom",
   "email": "nouveau@espa.mg",
+  "adresse": "Nouvelle Adresse",
   "role": "Admin"
 }
 ```
@@ -245,6 +253,7 @@ Met à jour les informations d'un utilisateur existant.
     "nom": "Nouveau Nom",
     "prenom": "Nouveau Prénom",
     "email": "nouveau@espa.mg",
+    "adresse": "Nouvelle Adresse",
     "role": "Admin"
   }
 }

@@ -11,7 +11,7 @@ use Exception;
 class UtilisateursService
 {
     private EntityManagerInterface $em;
-     
+
     private UtilisateursRepository $utilisateurRepository;
     private RolesRepository $roleRepository;
 
@@ -51,7 +51,7 @@ class UtilisateursService
     public function updateUser($idUser, array $data): Utilisateurs
     {
         $user = $this->utilisateurRepository->find($idUser);
-        if(!$user){
+        if (!$user) {
             throw new Exception('Utilisateur non trouvé pour id=' . $idUser);
         }
         if (isset($data['prenom'])) {
@@ -64,6 +64,10 @@ class UtilisateursService
 
         if (isset($data['email'])) {
             $user->setEmail($data['email']);
+        }
+
+        if (isset($data['adresse'])) {
+            $user->setAdresse($data['adresse']);
         }
 
         if (isset($data['role'])) {
@@ -84,11 +88,11 @@ class UtilisateursService
 
         return $user;
     }
-    public function createUser(Utilisateurs $user,$role_id=2): Utilisateurs
+    public function createUser(Utilisateurs $user, $role_id = 2): Utilisateurs
     {
-        $role= $this->roleRepository->find($role_id); // 2 correspond au rôle "Utilisateur"
+        $role = $this->roleRepository->find($role_id); // 2 correspond au rôle "Utilisateur"
         if (!$role) {
-            throw new Exception("Role non trouvé pour id=".$role_id);
+            throw new Exception("Role non trouvé pour id=" . $role_id);
         }
         $user->setRole($role);
         return $this->createUserByRole($user);
@@ -98,7 +102,7 @@ class UtilisateursService
     {
         $user = $this->utilisateurRepository->login($email, $plainPassword);
 
-        return $user; 
+        return $user;
     }
 
 }
