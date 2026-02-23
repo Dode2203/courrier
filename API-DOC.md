@@ -267,6 +267,47 @@ Met à jour les informations d'un utilisateur existant.
 
 ---
 
+### `GET /api/courriers`
+
+Liste les courriers enregistrés avec pagination et tri chronologique (plus récent au plus ancien).
+
+- **Paramètres de requête (Query String) :**
+    - `page` (integer, optionnel, défaut : 1) : Numéro de la page.
+    - `limit` (integer, optionnel, défaut : 20) : Nombre d'éléments par page.
+- **Accès :** Tout utilisateur authentifié
+
+#### Réponse — `200 OK`
+
+```json
+{
+  "status": "success",
+  "data": {
+    "items": [
+      {
+        "id": 42,
+        "reference": "21022026/REF1",
+        "nom": "RAKOTO",
+        "prenom": "Jean",
+        "object": "Demande de bourse",
+        "description": "...",
+        "mail": "rakoto@example.mg",
+        "dateCreation": "2026-02-21 06:00:00",
+        "dateFin": null,
+        "fichiers": []
+      }
+    ],
+    "pagination": {
+      "total": 125,
+      "page": 1,
+      "lastPage": 7,
+      "limit": 20
+    }
+  }
+}
+```
+
+---
+
 ### `POST /api/courriers/creer`
 
 Crée un nouveau courrier, avec upload optionnel d'un fichier joint.
@@ -577,52 +618,45 @@ Liste les messages de l'utilisateur connecté, avec filtre de direction et pagin
 
 | Paramètre | Type      | Défaut       | Valeurs possibles              | Description                            |
 |-----------|-----------|--------------|--------------------------------|----------------------------------------|
-| `type`    | `string`  | `received`   | `received`, `sent`, `all`      | Filtre de direction des messages        |
+| `type`    | `string`  | `all`        | `received`, `sent`, `all`      | Filtre de direction des messages        |
 | `page`    | `integer` | `1`          | —                              | Numéro de la page à afficher           |
-| `limit`   | `integer` | `10`         | —                              | Nombre de messages par page            |
+| `limit`   | `integer` | `20`         | —                              | Nombre de messages par page            |
 
 | Valeur `type` | Description                                         |
 |---------------|-----------------------------------------------------|
-| `received`    | **(défaut)** Messages où l'utilisateur est destinataire |
-| `sent`        | Messages où l'utilisateur est expéditeur            |
-| `all`         | Boîte de réception + messages envoyés               |
+| `received`    | Messages où l'utilisateur est le destinataire       |
+| `sent`        | Messages où l'utilisateur est l'expéditeur         |
+| `all`         | **(défaut)** Tous les messages liés à l'utilisateur |
 
 **Exemples :**
-- `GET /api/messages` → messages reçus, page 1
+- `GET /api/messages` → tous les messages, page 1
 - `GET /api/messages?type=sent` → messages envoyés
-- `GET /api/messages?type=all&page=2&limit=5` → tous les messages, page 2
+- `GET /api/messages?type=received&page=2&limit=5` → messages reçus, page 2
 
 #### Réponse — `200 OK`
+
+Le résultat est trié par **ordre chronologique décroissant** (le message le plus récent est à l'index 0).
 
 ```json
 {
   "status": "success",
   "data": {
-    "messages": [
+    "items": [
       {
-        "id": 10,
-        "courrier": {
-          "id": 42,
-          "reference": "REF-2026-00042",
-          "object": "Demande de bourse"
-        },
-        "expediteur": {
-          "id": 1,
-          "nom": "Rakoto",
-          "prenom": "Jean"
-        },
-        "destinataire": {
-          "id": 2,
-          "nom": "Rabe",
-          "prenom": "Marie"
-        },
+        "id": 16,
+        "dateCreation": "2026-02-23 09:40:00",
         "isReadAt": null,
-        "dateCreation": "2026-02-21 06:30:00"
+        "expediteur": { "id": 1, "nom": "RAJAO", "prenom": "Emile" },
+        "destinataire": { "id": 5, "nom": "RANDRIA", "prenom": "Mamy" },
+        "courrier": { "id": 42, "reference": "21022026/REF1", "object": "Demande de bourse" }
       }
     ],
-    "page": 1,
-    "limit": 10,
-    "type": "received"
+    "pagination": {
+      "total": 54,
+      "page": 1,
+      "lastPage": 3,
+      "limit": 20
+    }
   }
 }
 ```
@@ -747,7 +781,8 @@ Supprime logiquement un message (Soft Delete). Le message n'apparaîtra plus dan
 | `GET`    | `/utilisateur`                        | —                       | ✅ Admin     | Liste tous les utilisateurs              |
 | `POST`   | `/utilisateur`                        | `application/json`      | ✅ Admin     | Crée un nouvel utilisateur               |
 | `GET`    | `/utilisateur/{id}`                   | —                       | ✅ Admin     | Détails d'un utilisateur                 |
-| `PUT`    | `/utilisateur/{id}`                   | `application/json`      | ✅ Admin     | Mise à jour d'un utilisateur             |
+| `POST`   | `/utilisateur/{id}`                   | `application/json`      | ✅ Admin     | Mise à jour d'un utilisateur             |
+| `GET`    | `/api/courriers`                      | —                       | ✅ Token     | Liste paginée des courriers              |
 | `POST`   | `/api/courriers/creer`                | `multipart/form-data`   | ✅ Token     | Crée un courrier                         |
 | `POST`   | `/api/courriers/creerTransferer`      | `multipart/form-data`   | ✅ Token     | Crée un courrier et le transfère         |
 | `GET`    | `/api/courriers/recherche`            | —                       | ✅ Token     | Recherche par nom ou prénom              |

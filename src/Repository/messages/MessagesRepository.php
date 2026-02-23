@@ -6,6 +6,7 @@ use App\Entity\messages\Messages;
 use App\Entity\utilisateurs\Utilisateurs;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 class MessagesRepository extends ServiceEntityRepository
 {
@@ -83,4 +84,24 @@ class MessagesRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * @return Paginator
+     */
+    public function findMessagesPaginated(int $userId, int $page, int $limit, string $type): Paginator
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->andWhere('m.deletedAt IS NULL')
+            ->setParameter('userId', $userId)
+            ->orderBy('m.dateCreation', 'DESC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+
+        match ($type) {
+            'sent' => $qb->andWhere('m.expediteur = :userId'),
+            'all' => $qb->andWhere('m.destinataire = :userId OR m.expediteur = :userId'),
+            default => $qb->andWhere('m.destinataire = :userId'), // 'received'
+        };
+
+        return new Paginator($qb->getQuery());
+    }
 }

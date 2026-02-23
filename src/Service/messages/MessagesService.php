@@ -90,9 +90,25 @@ class MessagesService
      *
      * @param string $type 'received' (défaut), 'sent', ou 'all'
      */
-    public function getAllMessage(int $userId, int $page = 1, int $limit = 10, string $type = 'received'): array
+    public function getPaginatedMessages(int $userId, int $page = 1, int $limit = 20, string $type = 'all'): array
     {
-        $offset = ($page - 1) * $limit;
-        return $this->repo->findByUtilisateur($userId, $limit, $offset, $type);
+        $paginator = $this->repo->findMessagesPaginated($userId, $page, $limit, $type);
+        $totalItems = count($paginator);
+        $lastPage = ceil($totalItems / $limit);
+
+        $items = [];
+        foreach ($paginator as $message) {
+            $items[] = $message->toArray();
+        }
+
+        return [
+            'items' => $items,
+            'pagination' => [
+                'total' => $totalItems,
+                'page' => $page,
+                'lastPage' => (int) $lastPage,
+                'limit' => $limit
+            ]
+        ];
     }
 }

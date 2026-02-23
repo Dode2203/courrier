@@ -131,4 +131,28 @@ class CourriersService
         return $this->repo->searchByCriteria($nom, $prenom);
     }
 
+    /**
+     * Liste paginée des courriers
+     */
+    public function getAllPaginated(int $page, int $limit): array
+    {
+        $paginator = $this->repo->findAllPaginated($page, $limit);
+        $totalItems = count($paginator);
+        $lastPage = ceil($totalItems / $limit);
+
+        $items = [];
+        foreach ($paginator as $courrier) {
+            $items[] = $courrier->toArray();
+        }
+
+        return [
+            'items' => $items,
+            'pagination' => [
+                'total' => $totalItems,
+                'page' => $page,
+                'lastPage' => (int) $lastPage,
+                'limit' => $limit
+            ]
+        ];
+    }
 }

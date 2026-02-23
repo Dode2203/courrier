@@ -34,6 +34,23 @@ class CourrierController extends BaseApiController
         parent::__construct($jwtManager, $utilisateursService, $validator);
     }
 
+    #[Route('', name: 'api_courriers_index', methods: ['GET'])]
+    #[TokenRequired]
+    public function index(Request $request): JsonResponse
+    {
+        try {
+            $this->getUserFromRequest($request);
+            $page = $request->query->getInt('page', 1);
+            $limit = $request->query->getInt('limit', 20);
+
+            $result = $this->courriersService->getAllPaginated($page, $limit);
+
+            return $this->jsonSuccess($result);
+        } catch (\Throwable $e) {
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
+        }
+    }
+
 
     #[Route('/creer', name: 'api_courriers_creer', methods: ['POST'])]
     #[TokenRequired]

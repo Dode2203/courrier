@@ -35,19 +35,12 @@ class MessageController extends BaseApiController
             $user = $this->getUserFromRequest($request);
 
             $page = (int) $request->query->get('page', 1);
-            $limit = (int) $request->query->get('limit', 10);
-            $type = $request->query->get('type', 'received'); // 'received' | 'sent' | 'all'
+            $limit = (int) $request->query->get('limit', 20);
+            $type = $request->query->get('type', 'all'); // 'received' | 'sent' | 'all'
 
-            $messages = $this->messagesService->getAllMessage($user->getId(), $page, $limit, $type);
+            $result = $this->messagesService->getPaginatedMessages($user->getId(), $page, $limit, $type);
 
-            $data = array_map(fn($m) => $m->toArray(), $messages);
-
-            return $this->jsonSuccess([
-                'messages' => $data,
-                'page' => $page,
-                'limit' => $limit,
-                'type' => $type,
-            ]);
+            return $this->jsonSuccess($result);
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }

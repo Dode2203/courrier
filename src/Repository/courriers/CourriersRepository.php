@@ -5,6 +5,7 @@ namespace App\Repository\courriers;
 use App\Entity\courriers\Courriers;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 class CourriersRepository extends ServiceEntityRepository
 {
@@ -79,5 +80,20 @@ class CourriersRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @return Paginator
+     */
+    public function findAllPaginated(int $page, int $limit): Paginator
+    {
+        $query = $this->createQueryBuilder('c')
+            ->andWhere('c.deletedAt IS NULL')
+            ->orderBy('c.dateCreation', 'DESC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery();
+
+        return new Paginator($query);
     }
 }
