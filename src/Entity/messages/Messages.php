@@ -28,6 +28,9 @@ class Messages extends BaseEntite
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $isReadAt = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $observation = null;
+
 
     public function getCourrier(): ?Courriers
     {
@@ -73,6 +76,17 @@ class Messages extends BaseEntite
         return $this;
     }
 
+    public function getObservation(): ?string
+    {
+        return $this->observation;
+    }
+
+    public function setObservation(?string $observation): static
+    {
+        $this->observation = $observation;
+        return $this;
+    }
+
     public function toArray(): array
     {
         return [
@@ -93,6 +107,7 @@ class Messages extends BaseEntite
                 'prenom' => $this->destinataire->getPrenom(),
             ] : null,
             'isReadAt' => $this->isReadAt ? $this->isReadAt->format('Y-m-d H:i:s') : null,
+            'observation' => $this->observation,
             'dateCreation' => $this->getDateCreation() ? $this->getDateCreation()->format('Y-m-d H:i:s') : null,
         ];
     }

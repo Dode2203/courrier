@@ -62,7 +62,8 @@ class MessageController extends BaseApiController
             $this->messagesService->envoyerMessage(
                 $user->getId(),
                 (int) $data['destId'],
-                (int) $data['courrierId']
+                (int) $data['courrierId'],
+                $data['observation'] ?? null
             );
 
             return $this->jsonSuccess(['message' => 'Courrier transféré avec succès.']);

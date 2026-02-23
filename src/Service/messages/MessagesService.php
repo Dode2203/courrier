@@ -26,9 +26,9 @@ class MessagesService
     /**
      * Envoie un message concernant un courrier
      */
-    public function envoyerMessage(int $expId, int $destId, int $courrierId): void
+    public function envoyerMessage(int $expId, int $destId, int $courrierId, ?string $observation = null): void
     {
-        $this->entityManager->wrapInTransaction(function () use ($expId, $destId, $courrierId) {
+        $this->entityManager->wrapInTransaction(function () use ($expId, $destId, $courrierId, $observation) {
             $expediteur = $this->utilisateursService->getUserById($expId);
             $this->validator->throwIfNull($expediteur, "Expéditeur avec l'ID $expId introuvable.");
 
@@ -42,6 +42,7 @@ class MessagesService
             $message->setExpediteur($expediteur);
             $message->setDestinataire($destinataire);
             $message->setCourrier($courrier);
+            $message->setObservation($observation);
             $message->setIsReadAt(null);
 
             $this->repo->save($message);

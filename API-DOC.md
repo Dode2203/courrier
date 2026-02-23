@@ -680,7 +680,8 @@ Transfère un courrier existant vers un utilisateur destinataire (crée un messa
 ```json
 {
   "destId": 3,
-  "courrierId": 42
+  "courrierId": 42,
+  "observation": "<p>Veuillez traiter ce dossier en priorité. Merci.</p>"
 }
 ```
 
@@ -688,6 +689,7 @@ Transfère un courrier existant vers un utilisateur destinataire (crée un messa
 |-------------|-----------|--------|-----------------------------------|
 | `destId`    | `integer` | ✅     | ID de l'utilisateur destinataire  |
 | `courrierId`| `integer` | ✅     | ID du courrier à transférer       |
+| `observation`| `string` | ❌     | Note/Instruction (Rich Text / HTML)|
 
 #### Réponse — `200 OK`
 
