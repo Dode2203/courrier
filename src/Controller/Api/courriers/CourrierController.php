@@ -5,6 +5,7 @@ namespace App\Controller\Api\courriers;
 use App\Controller\Api\utils\BaseApiController;
 use App\Entity\courriers\Courriers;
 use App\Service\courriers\CourriersService;
+use App\Service\utils\ApiResponseService;
 use App\Service\messages\MailService;
 use App\Service\utilisateurs\UtilisateursService;
 use App\Service\utils\JwtTokenManager;
@@ -26,26 +27,32 @@ class CourrierController extends BaseApiController
         JwtTokenManager $jwtManager,
         UtilisateursService $utilisateursService,
         ValidationService $validator,
+        ApiResponseService $responseService,
         private readonly CourriersService $courriersService,
         private readonly MailService $mailService,
         private readonly MessagesService $messagesService,
         private readonly EntityManagerInterface $entityManager
     ) {
-        parent::__construct($jwtManager, $utilisateursService, $validator);
+        parent::__construct($jwtManager, $utilisateursService, $validator, $responseService);
     }
 
-    #[Route('', name: 'api_courriers_index', methods: ['GET'])]
+    #[Route('', name: 'api_courriers_list', methods: ['GET'])]
     #[TokenRequired]
     public function index(Request $request): JsonResponse
     {
         try {
             $this->getUserFromRequest($request);
-            $page = $request->query->getInt('page', 1);
-            $limit = $request->query->getInt('limit', 20);
+
+            $page = (int) $request->query->get('page', 1);
+            $limit = (int) $request->query->get('limit', 20);
 
             $result = $this->courriersService->getAllPaginated($page, $limit);
 
-            return $this->jsonSuccess($result);
+            return $this->jsonSuccess(
+                data: $result['items'],
+                message: "Liste des courriers récupérée avec succès.",
+                extras: ['pagination' => $result['pagination']]
+            );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -72,10 +79,14 @@ class CourrierController extends BaseApiController
 
             $this->courriersService->save($courrier);
 
-            return $this->jsonSuccess([
-                'id' => $courrier->getId(),
-                'reference' => $courrier->getReference()
-            ], 201);
+            return $this->jsonSuccess(
+                data: [
+                    'id' => $courrier->getId(),
+                    'reference' => $courrier->getReference()
+                ],
+                message: 'Courrier créé avec succès.',
+                code: 201
+            );
 
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
@@ -102,7 +113,8 @@ class CourrierController extends BaseApiController
 
             $this->validator->validateRequiredFields($data, ['mail', 'description', 'object', 'destId', 'nom']);
 
-            $result = $this->entityManager->wrapInTransaction(function () use ($data, $user, $uploadedFiles) {
+            $this->entityManager->beginTransaction();
+            try {
                 $courrier = new Courriers();
                 $courrier->setMail($data['mail'])
                     ->setDescription($data['description'])
@@ -121,14 +133,20 @@ class CourrierController extends BaseApiController
                     files: $uploadedFiles
                 );
 
-                return [
-                    'id' => $courrier->getId(),
-                    'reference' => $courrier->getReference()
-                ];
-            });
+                $this->entityManager->commit();
 
-            return $this->jsonSuccess($result, 201);
-
+                return $this->jsonSuccess(
+                    data: [
+                        'id' => $courrier->getId(),
+                        'reference' => $courrier->getReference()
+                    ],
+                    message: "Courrier créé et transféré avec succès.",
+                    code: 201
+                );
+            } catch (\Throwable $e) {
+                $this->entityManager->rollback();
+                throw $e;
+            }
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -148,9 +166,13 @@ class CourrierController extends BaseApiController
             }
 
             $courriers = $this->courriersService->recherche($nom, $prenom);
-            $data = array_map(fn(Courriers $c) => $c->toArray(), $courriers);
+            $items = array_map(fn(Courriers $c) => $c->toArray(), $courriers);
 
-            return $this->jsonSuccess(['courriers' => $data]);
+            return $this->jsonSuccess(
+                data: $items,
+                message: "Résultats de recherche récupérés.",
+                extras: ['pagination' => ['total' => count($items), 'page' => 1, 'lastPage' => 1, 'limit' => count($items)]]
+            );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -165,7 +187,10 @@ class CourrierController extends BaseApiController
             $courrier = $this->courriersService->getCourrierById($id);
             $this->validator->throwIfNull($courrier, "Courrier avec l'ID $id introuvable.");
 
-            return $this->jsonSuccess($courrier->toArray());
+            return $this->jsonSuccess(
+                data: $courrier->toArray(),
+                message: "Détails du courrier récupérés."
+            );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -182,7 +207,9 @@ class CourrierController extends BaseApiController
             // Envoi du mail et clôture via le service spécialisé
             $this->mailService->envoyerMail($id);
 
-            return $this->jsonSuccess(['message' => "Le dossier a été clôturé et l'étudiant a été notifié par mail."]);
+            return $this->jsonSuccess(
+                message: "Le dossier a été clôturé et l'étudiant a été notifié par mail."
+            );
 
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
@@ -198,7 +225,9 @@ class CourrierController extends BaseApiController
             $this->getUserFromRequest($request);
             $this->courriersService->supprimerCourrier($id);
 
-            return $this->jsonSuccess(['message' => 'Courrier supprimé avec succès.']);
+            return $this->jsonSuccess(
+                message: 'Courrier supprimé avec succès.'
+            );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }

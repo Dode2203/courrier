@@ -4,6 +4,7 @@ namespace App\Controller\Api\utils;
 
 use App\Entity\utilisateurs\Utilisateurs;
 use App\Service\utilisateurs\UtilisateursService;
+use App\Service\utils\ApiResponseService;
 use App\Service\utils\JwtTokenManager;
 use App\Service\utils\ValidationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,7 +17,8 @@ abstract class BaseApiController extends AbstractController
     public function __construct(
         protected readonly JwtTokenManager $jwtManager,
         protected readonly UtilisateursService $utilisateursService,
-        protected readonly ValidationService $validator
+        protected readonly ValidationService $validator,
+        protected readonly ApiResponseService $responseService
     ) {
     }
 
@@ -44,24 +46,24 @@ abstract class BaseApiController extends AbstractController
     }
 
     /**
-     * Retourne une réponse JSON de succès
+     * Retourne une réponse JSON de succès standardisée
      */
-    protected function jsonSuccess(mixed $data, int $code = 200): JsonResponse
+    protected function jsonSuccess(mixed $data = null, string $message = "Success", array $extras = [], int $code = 200): JsonResponse
     {
-        return $this->json([
-            'status' => 'success',
-            'data' => $data
-        ], $code);
+        return $this->json(
+            $this->responseService->format(true, $message, $data, $extras),
+            $code
+        );
     }
 
     /**
-     * Retourne une réponse JSON d'erreur
+     * Retourne une réponse JSON d'erreur standardisée
      */
     protected function jsonError(string $message, int $code = 400): JsonResponse
     {
-        return $this->json([
-            'status' => 'error',
-            'message' => $message
-        ], $code);
+        return $this->json(
+            $this->responseService->format(false, $message),
+            $code
+        );
     }
 }

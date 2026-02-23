@@ -281,6 +281,7 @@ Liste les courriers enregistrés avec pagination et tri chronologique (plus réc
 ```json
 {
   "status": "success",
+  "message": "Liste des courriers récupérée avec succès.",
   "data": {
     "items": [
       {
@@ -293,8 +294,7 @@ Liste les courriers enregistrés avec pagination et tri chronologique (plus réc
         "description": "...",
         "mail": "rakoto@example.mg",
         "dateCreation": "2026-02-21 06:00:00",
-        "dateFin": null,
-        "fichiers": []
+        "dateFin": null
       }
     ],
     "pagination": {
@@ -332,6 +332,7 @@ Crée un nouveau courrier, avec upload optionnel d'un fichier joint.
 ```json
 {
   "status": "success",
+  "message": "Courrier créé avec succès.",
   "data": {
     "id": 42,
     "reference": "REF-2026-00042"
@@ -371,6 +372,7 @@ Crée un courrier **et** le transfère immédiatement à un destinataire en une 
 ```json
 {
   "status": "success",
+  "message": "Courrier créé et transféré avec succès.",
   "data": {
     "id": 43,
     "reference": "REF-2026-00043"
@@ -640,6 +642,7 @@ Le résultat est trié par **ordre chronologique décroissant** (le message le p
 ```json
 {
   "status": "success",
+  "message": "Messages récupérés avec succès.",
   "data": {
     "items": [
       {
@@ -700,9 +703,8 @@ Transfère un courrier existant vers un utilisateur destinataire (crée un messa
 ```json
 {
   "status": "success",
-  "data": {
-    "message": "Courrier transféré avec succès."
-  }
+  "message": "Courrier transféré avec succès.",
+  "data": null
 }
 ```
 
@@ -729,9 +731,8 @@ Marque un message spécifique comme **lu** (enregistre la date et l'heure de lec
 ```json
 {
   "status": "success",
-  "data": {
-    "message": "Message marqué comme lu."
-  }
+  "message": "Message marqué comme lu.",
+  "data": null
 }
 ```
 
@@ -753,9 +754,8 @@ Marque un message spécifique comme **non lu** (réinitialise `isReadAt` à `nul
 ```json
 {
   "status": "success",
-  "data": {
-    "message": "Message marqué comme non lu."
-  }
+  "message": "Message marqué comme non lu.",
+  "data": null
 }
 ```
 
@@ -773,9 +773,8 @@ Supprime logiquement un message (Soft Delete). Le message n'apparaîtra plus dan
 ```json
 {
   "status": "success",
-  "data": {
-    "message": "Message supprimé avec succès."
-  }
+  "message": "Message supprimé avec succès.",
+  "data": null
 }
 ```
 

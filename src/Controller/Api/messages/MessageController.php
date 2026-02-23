@@ -4,6 +4,7 @@ namespace App\Controller\Api\messages;
 
 use App\Controller\Api\utils\BaseApiController;
 use App\Service\messages\MessagesService;
+use App\Service\utils\ApiResponseService;
 use App\Service\utilisateurs\UtilisateursService;
 use App\Service\utils\JwtTokenManager;
 use App\Service\utils\ValidationService;
@@ -19,9 +20,10 @@ class MessageController extends BaseApiController
         JwtTokenManager $jwtManager,
         UtilisateursService $utilisateursService,
         ValidationService $validator,
+        ApiResponseService $responseService,
         private readonly MessagesService $messagesService
     ) {
-        parent::__construct($jwtManager, $utilisateursService, $validator);
+        parent::__construct($jwtManager, $utilisateursService, $validator, $responseService);
     }
 
     /**
@@ -40,7 +42,11 @@ class MessageController extends BaseApiController
 
             $result = $this->messagesService->getPaginatedMessages($user->getId(), $page, $limit, $type);
 
-            return $this->jsonSuccess($result);
+            return $this->jsonSuccess(
+                data: $result['items'],
+                message: "Messages récupérés avec succès.",
+                extras: ['pagination' => $result['pagination']]
+            );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -70,7 +76,7 @@ class MessageController extends BaseApiController
                 files: is_array($uploadedFiles) ? $uploadedFiles : [$uploadedFiles]
             );
 
-            return $this->jsonSuccess(['message' => 'Courrier transféré avec succès.']);
+            return $this->jsonSuccess(message: 'Courrier transféré avec succès.');
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -87,7 +93,7 @@ class MessageController extends BaseApiController
             $this->getUserFromRequest($request);
             $this->messagesService->lireMessage($id);
 
-            return $this->jsonSuccess(['message' => 'Message marqué comme lu.']);
+            return $this->jsonSuccess(message: 'Message marqué comme lu.');
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -104,7 +110,7 @@ class MessageController extends BaseApiController
             $this->getUserFromRequest($request);
             $this->messagesService->marquerNonLu($id);
 
-            return $this->jsonSuccess(['message' => 'Message marqué comme non lu.']);
+            return $this->jsonSuccess(message: 'Message marqué comme non lu.');
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -121,7 +127,7 @@ class MessageController extends BaseApiController
             $this->getUserFromRequest($request);
             $this->messagesService->supprimerMessage($id);
 
-            return $this->jsonSuccess(['message' => 'Message supprimé avec succès.']);
+            return $this->jsonSuccess(message: 'Message supprimé avec succès.');
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
