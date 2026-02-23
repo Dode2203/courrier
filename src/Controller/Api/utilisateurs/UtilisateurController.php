@@ -44,6 +44,7 @@ class UtilisateurController extends AbstractController
                     'email' => $e->getEmail(),
                     'nom' => $e->getNom(),
                     'prenom' => $e->getPrenom(),
+                    'adresse' => $e->getAdresse(),
                     'role' => $e->getRole()->getName(),
                 ];
             }, $users);
@@ -95,7 +96,8 @@ class UtilisateurController extends AbstractController
         $user = new Utilisateurs();
         $user->setEmail($data['email'])
             ->setNom($data['nom'])
-            ->setPrenom($data['prenom']);
+            ->setPrenom($data['prenom'])
+            ->setAdresse($data['adresse'] ?? null);
 
         // 🔐 Hashage simple du mot de passe
         $plainPassword = $data['mdp'];
@@ -109,7 +111,8 @@ class UtilisateurController extends AbstractController
                     'id' => $user->getId(),
                     'email' => $user->getEmail(),
                     'nom' => $user->getNom(),
-                    'prenom' => $user->getPrenom()
+                    'prenom' => $user->getPrenom(),
+                    'adresse' => $user->getAdresse()
                 ]
             ], 201);
 
@@ -141,6 +144,7 @@ class UtilisateurController extends AbstractController
                 'email' => $user->getEmail(),
                 'nom' => $user->getNom(),
                 'prenom' => $user->getPrenom(),
+                'adresse' => $user->getAdresse(),
                 'role' => $user->getRole()->getName()
             ]
         ], 200);
@@ -168,6 +172,7 @@ class UtilisateurController extends AbstractController
                     'nom' => $user->getNom(),
                     'prenom' => $user->getPrenom(),
                     'email' => $user->getEmail(),
+                    'adresse' => $user->getAdresse(),
                     'role' => $user->getRole()->getName() ? $user->getRole()->getName() : null
                 ]
             ], 200);
@@ -236,7 +241,8 @@ class UtilisateurController extends AbstractController
                 'email' => $user->getEmail(),
                 'role' => $user->getRole()->getName(), // ajouter role ici
                 'nom' => $user->getNom(),
-                'prenom' => $user->getPrenom()
+                'prenom' => $user->getPrenom(),
+                'adresse' => $user->getAdresse()
             ],
             'token' => $tokenString
         ];

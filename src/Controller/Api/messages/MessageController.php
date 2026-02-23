@@ -35,17 +35,12 @@ class MessageController extends BaseApiController
             $user = $this->getUserFromRequest($request);
 
             $page = (int) $request->query->get('page', 1);
-            $limit = (int) $request->query->get('limit', 10);
+            $limit = (int) $request->query->get('limit', 20);
+            $type = $request->query->get('type', 'all'); // 'received' | 'sent' | 'all'
 
-            $messages = $this->messagesService->getAllMessage($user->getId(), $page, $limit);
+            $result = $this->messagesService->getPaginatedMessages($user->getId(), $page, $limit, $type);
 
-            $data = array_map(fn($m) => $m->toArray(), $messages);
-
-            return $this->jsonSuccess([
-                'messages' => $data,
-                'page' => $page,
-                'limit' => $limit
-            ]);
+            return $this->jsonSuccess($result);
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -88,6 +83,40 @@ class MessageController extends BaseApiController
             $this->messagesService->lireMessage($id);
 
             return $this->jsonSuccess(['message' => 'Message marqué comme lu.']);
+        } catch (\Throwable $e) {
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
+        }
+    }
+
+    /**
+     * Marque un message comme non lu (réinitialise isReadAt à null)
+     */
+    #[Route('/{id}/non-lu', name: 'api_messages_non_lu', methods: ['PATCH'], requirements: ['id' => '\d+'])]
+    #[TokenRequired]
+    public function nonLu(int $id, Request $request): JsonResponse
+    {
+        try {
+            $this->getUserFromRequest($request);
+            $this->messagesService->marquerNonLu($id);
+
+            return $this->jsonSuccess(['message' => 'Message marqué comme non lu.']);
+        } catch (\Throwable $e) {
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
+        }
+    }
+
+    /**
+     * Supprime logiquement un message (Soft Delete)
+     */
+    #[Route('/{id}', name: 'api_messages_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    #[TokenRequired]
+    public function delete(int $id, Request $request): JsonResponse
+    {
+        try {
+            $this->getUserFromRequest($request);
+            $this->messagesService->supprimerMessage($id);
+
+            return $this->jsonSuccess(['message' => 'Message supprimé avec succès.']);
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }

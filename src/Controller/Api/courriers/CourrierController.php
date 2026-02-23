@@ -34,34 +34,49 @@ class CourrierController extends BaseApiController
         parent::__construct($jwtManager, $utilisateursService, $validator);
     }
 
+    #[Route('', name: 'api_courriers_index', methods: ['GET'])]
+    #[TokenRequired]
+    public function index(Request $request): JsonResponse
+    {
+        try {
+            $this->getUserFromRequest($request);
+            $page = $request->query->getInt('page', 1);
+            $limit = $request->query->getInt('limit', 20);
+
+            $result = $this->courriersService->getAllPaginated($page, $limit);
+
+            return $this->jsonSuccess($result);
+        } catch (\Throwable $e) {
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
+        }
+    }
+
 
     #[Route('/creer', name: 'api_courriers_creer', methods: ['POST'])]
     #[TokenRequired]
     public function creer(Request $request): JsonResponse
     {
         try {
-            // Vérifie l'utilisateur connecté
             $this->getUserFromRequest($request);
-
-            // Pour multipart/form-data, on utilise $request->request et $request->files
             $data = $request->request->all();
-            $file = $request->files->get('fichier');
 
-            // Validation des champs requis
-            $this->validator->validateRequiredFields($data, ['mail', 'description', 'object']);
-
-            // Validation de la taille du fichier (5 Mo max)
-            if ($file && $file->getSize() > 5 * 1024 * 1024) {
-                throw new \Exception("Le fichier est trop volumineux (max 5 Mo).", 400);
+            // Récupération souple : fichier unique ou tableau
+            $files = $request->files->get('fichiers');
+            if ($files && !is_array($files)) {
+                $files = [$files];
             }
+            $uploadedFiles = $files ?? [];
+
+            $this->validator->validateRequiredFields($data, ['mail', 'description', 'object', 'nom']);
 
             $courrier = new Courriers();
             $courrier->setMail($data['mail'])
                 ->setDescription($data['description'])
-                ->setObject($data['object']);
+                ->setObject($data['object'])
+                ->setNom($data['nom'])
+                ->setPrenom($data['prenom'] ?? null);
 
-            // Sauvegarde via le service (gère la référence automatique et le fichier)
-            $this->courriersService->save($courrier, $file);
+            $this->courriersService->save($courrier, $uploadedFiles);
 
             return $this->jsonSuccess([
                 'id' => $courrier->getId(),
@@ -76,36 +91,32 @@ class CourrierController extends BaseApiController
     /**
      * Crée un courrier et le transfère immédiatement à un destinataire
      */
-    #[Route('/creerEtTransferer', name: 'api_courriers_creer_transferer', methods: ['POST'])]
+    #[Route('/creerTransferer', name: 'api_courriers_creer_transferer', methods: ['POST'])]
     #[TokenRequired]
     public function creerEtTransferer(Request $request): JsonResponse
     {
         try {
             $user = $this->getUserFromRequest($request);
-
-            // Pour multipart/form-data
             $data = $request->request->all();
-            $file = $request->files->get('fichier');
 
-            // Validation des champs requis (incluant destId)
-            $this->validator->validateRequiredFields($data, ['mail', 'description', 'object', 'destId']);
-
-            // Validation de la taille du fichier (5 Mo max)
-            if ($file && $file->getSize() > 5 * 1024 * 1024) {
-                throw new \Exception("Le fichier est trop volumineux (max 5 Mo).", 400);
+            $files = $request->files->get('fichiers');
+            if ($files && !is_array($files)) {
+                $files = [$files];
             }
+            $uploadedFiles = $files ?? [];
 
-            $result = $this->entityManager->wrapInTransaction(function () use ($data, $user, $file) {
-                // 1. Création du courrier
+            $this->validator->validateRequiredFields($data, ['mail', 'description', 'object', 'destId', 'nom']);
+
+            $result = $this->entityManager->wrapInTransaction(function () use ($data, $user, $uploadedFiles) {
                 $courrier = new Courriers();
                 $courrier->setMail($data['mail'])
                     ->setDescription($data['description'])
-                    ->setObject($data['object']);
+                    ->setObject($data['object'])
+                    ->setNom($data['nom'])
+                    ->setPrenom($data['prenom'] ?? null);
 
-                // Sauvegarde via le service (gère le fichier)
-                $this->courriersService->save($courrier, $file);
+                $this->courriersService->save($courrier, $uploadedFiles);
 
-                // 2. Transfert immédiat
                 $this->messagesService->envoyerMessage(
                     $user->getId(),
                     (int) $data['destId'],
@@ -125,22 +136,63 @@ class CourrierController extends BaseApiController
         }
     }
 
+    #[Route('/recherche', name: 'api_courriers_recherche', methods: ['GET'])]
+    #[TokenRequired]
+    public function recherche(Request $request): JsonResponse
+    {
+        try {
+            $this->getUserFromRequest($request);
+            $nom = $request->query->get('nom');
+            $prenom = $request->query->get('prenom');
+
+            if (!$nom && !$prenom) {
+                return $this->jsonError("Veuillez fournir au moins un critère de recherche (nom ou prénom).", 400);
+            }
+
+            $courriers = $this->courriersService->recherche($nom, $prenom);
+            $data = array_map(fn(Courriers $c) => $c->toArray(), $courriers);
+
+            return $this->jsonSuccess(['courriers' => $data]);
+        } catch (\Throwable $e) {
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
+        }
+    }
+
     #[Route('/{id}', name: 'api_courriers_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     #[TokenRequired]
     public function show(int $id, Request $request): JsonResponse
     {
         try {
-            // Vérifie l'utilisateur connecté
             $this->getUserFromRequest($request);
-
-            // Récupération via le service
             $courrier = $this->courriersService->getCourrierById($id);
-
-            // Validation existence
             $this->validator->throwIfNull($courrier, "Courrier avec l'ID $id introuvable.");
 
             return $this->jsonSuccess($courrier->toArray());
+        } catch (\Throwable $e) {
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
+        }
+    }
 
+    /**
+     * Liste les métadonnées des fichiers attachés à un courrier
+     */
+    #[Route('/{id}/fichiers', name: 'api_courriers_fichiers_list', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[TokenRequired]
+    public function listFichiers(int $id, Request $request): JsonResponse
+    {
+        try {
+            $this->getUserFromRequest($request);
+            $courrier = $this->courriersService->getCourrierById($id);
+            $this->validator->throwIfNull($courrier, "Courrier introuvable.");
+
+            $fichiers = $courrier->getFichiers()->map(fn($f) => [
+                'id' => $f->getId(),
+                'nom' => $f->getNom(),
+                'type' => $f->getType(),
+                'dateCreation' => $f->getDateCreation() ? $f->getDateCreation()->format('Y-m-d H:i:s') : null,
+            ])->toArray();
+
+            return $this->jsonSuccess(['fichiers' => $fichiers]);
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -164,38 +216,22 @@ class CourrierController extends BaseApiController
         }
     }
 
+
+
     /**
-     * Récupère le fichier associé à un courrier
+     * Supprime logiquement un courrier (Soft Delete)
      */
-    #[Route('/{id}/fichier', name: 'api_courriers_fichier', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', name: 'api_courriers_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
     #[TokenRequired]
-    public function getFile(int $id, Request $request): Response
+    public function delete(int $id, Request $request): JsonResponse
     {
         try {
             $this->getUserFromRequest($request);
-            $courrier = $this->courriersService->getCourrierById($id);
+            $this->courriersService->supprimerCourrier($id);
 
-            $this->validator->throwIfNull($courrier, "Courrier introuvable.");
-            $fichier = $courrier->getFichier();
-
-            if (!$fichier || !$fichier->getBinaire()) {
-                throw new \Exception("Aucun fichier n'est associé à ce courrier.", 404);
-            }
-
-            $response = new Response(stream_get_contents($fichier->getBinaire()));
-            $response->headers->set('Content-Type', $fichier->getType());
-            $response->headers->set('Content-Disposition', 'inline; filename="' . $fichier->getNom() . '"');
-
-            return $response;
-
+            return $this->jsonSuccess(['message' => 'Courrier supprimé avec succès.']);
         } catch (\Throwable $e) {
-            return new JsonResponse([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], $e->getCode() ?: 400);
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
     }
-
-
-
 }

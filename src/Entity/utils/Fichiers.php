@@ -6,6 +6,8 @@ use App\Repository\FichiersRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
 
+use App\Entity\courriers\Courriers;
+
 #[ORM\Entity(repositoryClass: FichiersRepository::class)]
 class Fichiers extends BaseEntite
 {
@@ -20,6 +22,10 @@ class Fichiers extends BaseEntite
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateFin = null;
+
+    #[ORM\ManyToOne(targetEntity: Courriers::class, inversedBy: 'fichiers')]
+    #[ORM\JoinColumn(nullable: true, onDelete: "CASCADE")]
+    private ?Courriers $courrier = null;
 
     // ----- Getters & Setters -----
 
@@ -64,6 +70,17 @@ class Fichiers extends BaseEntite
     public function setDateFin(?\DateTimeInterface $dateFin): static
     {
         $this->dateFin = $dateFin;
+        return $this;
+    }
+
+    public function getCourrier(): ?Courriers
+    {
+        return $this->courrier;
+    }
+
+    public function setCourrier(?Courriers $courrier): static
+    {
+        $this->courrier = $courrier;
         return $this;
     }
 }

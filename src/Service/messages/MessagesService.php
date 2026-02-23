@@ -62,6 +62,18 @@ class MessagesService
     }
 
     /**
+     * Marque un message comme non lu (réinitialise isReadAt à null)
+     */
+    public function marquerNonLu(int $messageId): void
+    {
+        $message = $this->repo->getById($messageId);
+        $this->validator->throwIfNull($message, "Message avec l'ID $messageId introuvable.");
+
+        $message->setIsReadAt(null);
+        $this->repo->save($message);
+    }
+
+    /**
      * Supprime logiquement un message
      */
     public function supprimerMessage(int $messageId): void
@@ -74,11 +86,29 @@ class MessagesService
     }
 
     /**
-     * Récupère les messages reçus par un utilisateur avec pagination
+     * Récupère les messages d'un utilisateur avec pagination et filtre de type
+     *
+     * @param string $type 'received' (défaut), 'sent', ou 'all'
      */
-    public function getAllMessage(int $userId, int $page = 1, int $limit = 10): array
+    public function getPaginatedMessages(int $userId, int $page = 1, int $limit = 20, string $type = 'all'): array
     {
-        $offset = ($page - 1) * $limit;
-        return $this->repo->findByUtilisateur($userId, $limit, $offset);
+        $paginator = $this->repo->findMessagesPaginated($userId, $page, $limit, $type);
+        $totalItems = count($paginator);
+        $lastPage = ceil($totalItems / $limit);
+
+        $items = [];
+        foreach ($paginator as $message) {
+            $items[] = $message->toArray();
+        }
+
+        return [
+            'items' => $items,
+            'pagination' => [
+                'total' => $totalItems,
+                'page' => $page,
+                'lastPage' => (int) $lastPage,
+                'limit' => $limit
+            ]
+        ];
     }
 }
