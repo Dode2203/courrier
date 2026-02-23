@@ -76,49 +76,30 @@ class CourriersService
     }
 
     /**
-     * Sauvegarde un courrier avec génération de référence si nécessaire et multi-fichiers
+     * Sauvegarde un courrier avec génération de référence si nécessaire
      * 
      * @param Courriers $courrier
-     * @param UploadedFile[] $files
      */
-    public function save(Courriers $courrier, array $files = []): void
+    public function save(Courriers $courrier): void
     {
-
         $this->validator->throwIfNull($courrier->getNom(), "Le nom du déposant est obligatoire.");
-        // if (!$courrier->getNom() || !$courrier->getPrenom()) {
-        //     throw new \Exception("Le nom et le prénom du déposant sont obligatoires.", 400);
-        // }
 
-        // 1. Validation pré-transaction (Atomicité métier)
-        foreach ($files as $file) {
-            if ($file && $file->getSize() > 5 * 1024 * 1024) {
-                throw new \Exception("Le fichier '" . $file->getClientOriginalName() . "' est trop volumineux (max 5 Mo).", 400);
-            }
-        }
-
-        // 2. Transaction
-        $this->entityManager->wrapInTransaction(function () use ($courrier, $files) {
+        // Transaction
+        $this->entityManager->wrapInTransaction(function () use ($courrier) {
             if ($courrier->getReference() === null) {
                 $courrier->setReference($this->generateReference());
             }
 
             // Normalisation des identités
-            $courrier->setNom(mb_strtoupper($courrier->getNom()));
+            if ($courrier->getNom()) {
+                $courrier->setNom(mb_strtoupper($courrier->getNom()));
+            }
+
             if ($courrier->getPrenom()) {
                 $courrier->setPrenom(mb_convert_case($courrier->getPrenom(), MB_CASE_TITLE));
             }
 
-            // Persistance du courrier d'abord
             $this->repo->save($courrier);
-
-            // Persistance de chaque fichier lié
-            foreach ($files as $file) {
-                if ($file instanceof UploadedFile) {
-                    $fichierEntity = $this->fichiersService->saveToBlob($file);
-                    $fichierEntity->setCourrier($courrier);
-                    $this->entityManager->persist($fichierEntity);
-                }
-            }
         });
     }
 

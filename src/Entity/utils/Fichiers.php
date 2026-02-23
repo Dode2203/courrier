@@ -6,7 +6,7 @@ use App\Repository\FichiersRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
 
-use App\Entity\courriers\Courriers;
+use App\Entity\messages\Messages;
 
 #[ORM\Entity(repositoryClass: FichiersRepository::class)]
 class Fichiers extends BaseEntite
@@ -23,9 +23,9 @@ class Fichiers extends BaseEntite
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateFin = null;
 
-    #[ORM\ManyToOne(targetEntity: Courriers::class, inversedBy: 'fichiers')]
+    #[ORM\ManyToOne(targetEntity: Messages::class, inversedBy: 'fichiers')]
     #[ORM\JoinColumn(nullable: true, onDelete: "CASCADE")]
-    private ?Courriers $courrier = null;
+    private ?Messages $message = null;
 
     // ----- Getters & Setters -----
 
@@ -73,14 +73,14 @@ class Fichiers extends BaseEntite
         return $this;
     }
 
-    public function getCourrier(): ?Courriers
+    public function getMessage(): ?Messages
     {
-        return $this->courrier;
+        return $this->message;
     }
 
-    public function setCourrier(?Courriers $courrier): static
+    public function setMessage(?Messages $message): static
     {
-        $this->courrier = $courrier;
+        $this->message = $message;
         return $this;
     }
 }

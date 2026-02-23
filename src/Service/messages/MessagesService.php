@@ -11,6 +11,9 @@ use Exception;
 use Doctrine\ORM\EntityManagerInterface;
 
 
+use App\Service\utils\FichiersService;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 class MessagesService
 {
     public function __construct(
@@ -18,17 +21,20 @@ class MessagesService
         private readonly UtilisateursService $utilisateursService,
         private readonly CourriersService $courriersService,
         private readonly ValidationService $validator,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly FichiersService $fichiersService
     ) {
     }
 
 
     /**
-     * Envoie un message concernant un courrier
+     * Envoie un message concernant un courrier (avec upload optionnel de fichiers)
+     * 
+     * @param UploadedFile[] $files
      */
-    public function envoyerMessage(int $expId, int $destId, int $courrierId, ?string $observation = null): void
+    public function envoyerMessage(int $expId, int $destId, int $courrierId, ?string $observation = null, array $files = []): void
     {
-        $this->entityManager->wrapInTransaction(function () use ($expId, $destId, $courrierId, $observation) {
+        $this->entityManager->wrapInTransaction(function () use ($expId, $destId, $courrierId, $observation, $files) {
             $expediteur = $this->utilisateursService->getUserById($expId);
             $this->validator->throwIfNull($expediteur, "Expéditeur avec l'ID $expId introuvable.");
 
@@ -46,6 +52,15 @@ class MessagesService
             $message->setIsReadAt(null);
 
             $this->repo->save($message);
+
+            // Persistance de chaque fichier lié
+            foreach ($files as $file) {
+                if ($file instanceof UploadedFile) {
+                    $fichierEntity = $this->fichiersService->saveToBlob($file);
+                    $fichierEntity->setMessage($message);
+                    $this->entityManager->persist($fichierEntity);
+                }
+            }
         });
     }
 

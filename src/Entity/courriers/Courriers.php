@@ -4,7 +4,6 @@ namespace App\Entity\courriers;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\courriers\CourriersRepository;
-use App\Entity\utils\Fichiers;
 use App\Entity\utils\BaseEntite;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -23,10 +22,10 @@ class Courriers extends BaseEntite
 
 
 
-    #[ORM\Column(type: "string", length: 100, nullable: false)]
+    #[ORM\Column(type: "string", length: 100, nullable: true)]
     private ?string $mail = null;
 
-    #[ORM\Column(type: "string", length: 255, nullable: false)]
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $nom;
 
     #[ORM\Column(type: "string", length: 255, nullable: true)]
@@ -35,16 +34,11 @@ class Courriers extends BaseEntite
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $telephone = null;
 
-    #[ORM\OneToMany(mappedBy: 'courrier', targetEntity: Fichiers::class, cascade: ['persist', 'remove'])]
-    private Collection $fichiers;
-
     #[ORM\Column(type: "datetime_immutable", nullable: true)]
     private ?\DateTimeImmutable $dateFin = null;
 
-
     public function __construct()
     {
-        $this->fichiers = new ArrayCollection();
     }
 
 
@@ -124,36 +118,6 @@ class Courriers extends BaseEntite
         return $this;
     }
 
-    /**
-     * @return Collection<int, Fichiers>
-     */
-    public function getFichiers(): Collection
-    {
-        return $this->fichiers;
-    }
-
-    public function addFichier(Fichiers $fichier): self
-    {
-        if (!$this->fichiers->contains($fichier)) {
-            $this->fichiers->add($fichier);
-            $fichier->setCourrier($this);
-        }
-
-        return $this;
-    }
-
-    public function removeFichier(Fichiers $fichier): self
-    {
-        if ($this->fichiers->removeElement($fichier)) {
-            // set the owning side to null (unless already changed)
-            if ($fichier->getCourrier() === $this) {
-                $fichier->setCourrier(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getDateFin(): ?\DateTimeImmutable
     {
         return $this->dateFin;
@@ -178,11 +142,6 @@ class Courriers extends BaseEntite
             'telephone' => $this->telephone,
             'dateFin' => $this->dateFin ? $this->dateFin->format('Y-m-d H:i:s') : null,
             'dateCreation' => $this->getDateCreation() ? $this->getDateCreation()->format('Y-m-d H:i:s') : null,
-            'fichiers' => $this->fichiers->map(fn(Fichiers $f) => [
-                'id' => $f->getId(),
-                'nom' => $f->getNom(),
-                'type' => $f->getType(),
-            ])->toArray(),
         ];
     }
 }

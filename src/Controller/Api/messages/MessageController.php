@@ -55,15 +55,19 @@ class MessageController extends BaseApiController
     {
         try {
             $user = $this->getUserFromRequest($request);
-            $data = json_decode($request->getContent(), true);
+
+            // On supporte maintenant multipart/form-data pour les fichiers
+            $data = $request->request->all();
+            $uploadedFiles = $request->files->get('fichiers', []);
 
             $this->validator->validateRequiredFields($data, ['destId', 'courrierId']);
 
             $this->messagesService->envoyerMessage(
-                $user->getId(),
-                (int) $data['destId'],
-                (int) $data['courrierId'],
-                $data['observation'] ?? null
+                expId: $user->getId(),
+                destId: (int) $data['destId'],
+                courrierId: (int) $data['courrierId'],
+                observation: $data['observation'] ?? null,
+                files: is_array($uploadedFiles) ? $uploadedFiles : [$uploadedFiles]
             );
 
             return $this->jsonSuccess(['message' => 'Courrier transféré avec succès.']);

@@ -326,7 +326,6 @@ Crée un nouveau courrier, avec upload optionnel d'un fichier joint.
 | `telephone`   | `string`          | ❌     | Téléphone du déposant    |
 | `object`      | `string`          | ✅     | Objet du courrier        |
 | `description` | `string`          | ✅     | Description du courrier  |
-| `fichiers[]`  | `file[]` (binaire)| ❌     | Taille max : **5 Mo / fichier** |
 
 #### Réponse — `201 Created`
 
@@ -366,7 +365,6 @@ Crée un courrier **et** le transfère immédiatement à un destinataire en une 
 | `object`      | `string`          | ✅     | Objet du courrier        |
 | `description` | `string`          | ✅     | Description du courrier  |
 | `destId`      | `integer`         | ✅     | ID du destinataire       |
-| `fichiers[]`  | `file[]` (binaire)| ❌     | Taille max : **5 Mo / fichier** |
 
 #### Réponse — `201 Created`
 
@@ -650,7 +648,11 @@ Le résultat est trié par **ordre chronologique décroissant** (le message le p
         "isReadAt": null,
         "expediteur": { "id": 1, "nom": "RAJAO", "prenom": "Emile" },
         "destinataire": { "id": 5, "nom": "RANDRIA", "prenom": "Mamy" },
-        "courrier": { "id": 42, "reference": "21022026/REF1", "object": "Demande de bourse" }
+        "courrier": { "id": 42, "reference": "21022026/REF1", "object": "Demande de bourse" },
+        "observation": "<p>Veuillez traiter ce dossier...</p>",
+        "fichiers": [
+          { "id": 1, "nom": "PJ1.pdf", "type": "application/pdf" }
+        ]
       }
     ],
     "pagination": {
@@ -672,7 +674,7 @@ Le résultat est trié par **ordre chronologique décroissant** (le message le p
 
 Transfère un courrier existant vers un utilisateur destinataire (crée un message de transfert).
 
-- **Content-Type :** `application/json` ✅
+- **Content-Type :** `multipart/form-data` ⚠️ (pour le champ `fichiers[]`)
 - **Accès :** Tout utilisateur authentifié
 
 #### Corps de la requête
@@ -681,7 +683,8 @@ Transfère un courrier existant vers un utilisateur destinataire (crée un messa
 {
   "destId": 3,
   "courrierId": 42,
-  "observation": "<p>Veuillez traiter ce dossier en priorité. Merci.</p>"
+  "observation": "<p>Veuillez traiter ce dossier en priorité. Merci.</p>",
+  "fichiers[]": "[Fichiers binaires]"
 }
 ```
 
@@ -690,6 +693,7 @@ Transfère un courrier existant vers un utilisateur destinataire (crée un messa
 | `destId`    | `integer` | ✅     | ID de l'utilisateur destinataire  |
 | `courrierId`| `integer` | ✅     | ID du courrier à transférer       |
 | `observation`| `string` | ❌     | Note/Instruction (Rich Text / HTML)|
+| `fichiers[]` | `file[]`  | ❌     | Pièces jointes (max 5 Mo / fichier)|
 
 #### Réponse — `200 OK`
 

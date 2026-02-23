@@ -8,6 +8,9 @@ use Doctrine\DBAL\Types\Types;
 use App\Entity\utils\BaseEntite;
 use App\Entity\courriers\Courriers;
 use App\Entity\utilisateurs\Utilisateurs;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Entity\utils\Fichiers;
 
 #[ORM\Entity(repositoryClass: MessagesRepository::class)]
 class Messages extends BaseEntite
@@ -30,6 +33,14 @@ class Messages extends BaseEntite
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $observation = null;
+
+    #[ORM\OneToMany(mappedBy: 'message', targetEntity: Fichiers::class, cascade: ['persist', 'remove'])]
+    private Collection $fichiers;
+
+    public function __construct()
+    {
+        $this->fichiers = new ArrayCollection();
+    }
 
 
     public function getCourrier(): ?Courriers
@@ -87,6 +98,36 @@ class Messages extends BaseEntite
         return $this;
     }
 
+    /**
+     * @return Collection<int, Fichiers>
+     */
+    public function getFichiers(): Collection
+    {
+        return $this->fichiers;
+    }
+
+    public function addFichier(Fichiers $fichier): self
+    {
+        if (!$this->fichiers->contains($fichier)) {
+            $this->fichiers->add($fichier);
+            $fichier->setMessage($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFichier(Fichiers $fichier): self
+    {
+        if ($this->fichiers->removeElement($fichier)) {
+            // set the owning side to null (unless already changed)
+            if ($fichier->getMessage() === $this) {
+                $fichier->setMessage(null);
+            }
+        }
+
+        return $this;
+    }
+
     public function toArray(): array
     {
         return [
@@ -109,6 +150,11 @@ class Messages extends BaseEntite
             'isReadAt' => $this->isReadAt ? $this->isReadAt->format('Y-m-d H:i:s') : null,
             'observation' => $this->observation,
             'dateCreation' => $this->getDateCreation() ? $this->getDateCreation()->format('Y-m-d H:i:s') : null,
+            'fichiers' => $this->fichiers->map(fn(Fichiers $f) => [
+                'id' => $f->getId(),
+                'nom' => $f->getNom(),
+                'type' => $f->getType(),
+            ])->toArray(),
         ];
     }
 }

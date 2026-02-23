@@ -60,13 +60,6 @@ class CourrierController extends BaseApiController
             $this->getUserFromRequest($request);
             $data = $request->request->all();
 
-            // Récupération souple : fichier unique ou tableau
-            $files = $request->files->get('fichiers');
-            if ($files && !is_array($files)) {
-                $files = [$files];
-            }
-            $uploadedFiles = $files ?? [];
-
             $this->validator->validateRequiredFields($data, ['mail', 'description', 'object', 'nom']);
 
             $courrier = new Courriers();
@@ -77,7 +70,7 @@ class CourrierController extends BaseApiController
                 ->setPrenom($data['prenom'] ?? null)
                 ->setTelephone($data['telephone'] ?? null);
 
-            $this->courriersService->save($courrier, $uploadedFiles);
+            $this->courriersService->save($courrier);
 
             return $this->jsonSuccess([
                 'id' => $courrier->getId(),
@@ -100,6 +93,7 @@ class CourrierController extends BaseApiController
             $user = $this->getUserFromRequest($request);
             $data = $request->request->all();
 
+            // Récupération souple : fichier unique ou tableau
             $files = $request->files->get('fichiers');
             if ($files && !is_array($files)) {
                 $files = [$files];
@@ -117,12 +111,14 @@ class CourrierController extends BaseApiController
                     ->setPrenom($data['prenom'] ?? null)
                     ->setTelephone($data['telephone'] ?? null);
 
-                $this->courriersService->save($courrier, $uploadedFiles);
+                $this->courriersService->save($courrier);
 
                 $this->messagesService->envoyerMessage(
-                    $user->getId(),
-                    (int) $data['destId'],
-                    $courrier->getId()
+                    expId: $user->getId(),
+                    destId: (int) $data['destId'],
+                    courrierId: $courrier->getId(),
+                    observation: $data['observation'] ?? null,
+                    files: $uploadedFiles
                 );
 
                 return [
@@ -170,31 +166,6 @@ class CourrierController extends BaseApiController
             $this->validator->throwIfNull($courrier, "Courrier avec l'ID $id introuvable.");
 
             return $this->jsonSuccess($courrier->toArray());
-        } catch (\Throwable $e) {
-            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
-        }
-    }
-
-    /**
-     * Liste les métadonnées des fichiers attachés à un courrier
-     */
-    #[Route('/{id}/fichiers', name: 'api_courriers_fichiers_list', methods: ['GET'], requirements: ['id' => '\d+'])]
-    #[TokenRequired]
-    public function listFichiers(int $id, Request $request): JsonResponse
-    {
-        try {
-            $this->getUserFromRequest($request);
-            $courrier = $this->courriersService->getCourrierById($id);
-            $this->validator->throwIfNull($courrier, "Courrier introuvable.");
-
-            $fichiers = $courrier->getFichiers()->map(fn($f) => [
-                'id' => $f->getId(),
-                'nom' => $f->getNom(),
-                'type' => $f->getType(),
-                'dateCreation' => $f->getDateCreation() ? $f->getDateCreation()->format('Y-m-d H:i:s') : null,
-            ])->toArray();
-
-            return $this->jsonSuccess(['fichiers' => $fichiers]);
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
