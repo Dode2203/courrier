@@ -288,6 +288,7 @@ Liste les courriers enregistrés avec pagination et tri chronologique (plus réc
         "reference": "21022026/REF1",
         "nom": "RAKOTO",
         "prenom": "Jean",
+        "telephone": "034 56 789 01",
         "object": "Demande de bourse",
         "description": "...",
         "mail": "rakoto@example.mg",
@@ -322,6 +323,7 @@ Crée un nouveau courrier, avec upload optionnel d'un fichier joint.
 | `mail`        | `string`          | ✅     | Email de l'expéditeur    |
 | `nom`         | `string`          | ✅     | Nom du déposant          |
 | `prenom`      | `string`          | ❌     | Prénom du déposant       |
+| `telephone`   | `string`          | ❌     | Téléphone du déposant    |
 | `object`      | `string`          | ✅     | Objet du courrier        |
 | `description` | `string`          | ✅     | Description du courrier  |
 | `fichiers[]`  | `file[]` (binaire)| ❌     | Taille max : **5 Mo / fichier** |

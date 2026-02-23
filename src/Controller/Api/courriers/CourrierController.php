@@ -74,7 +74,8 @@ class CourrierController extends BaseApiController
                 ->setDescription($data['description'])
                 ->setObject($data['object'])
                 ->setNom($data['nom'])
-                ->setPrenom($data['prenom'] ?? null);
+                ->setPrenom($data['prenom'] ?? null)
+                ->setTelephone($data['telephone'] ?? null);
 
             $this->courriersService->save($courrier, $uploadedFiles);
 
@@ -113,7 +114,8 @@ class CourrierController extends BaseApiController
                     ->setDescription($data['description'])
                     ->setObject($data['object'])
                     ->setNom($data['nom'])
-                    ->setPrenom($data['prenom'] ?? null);
+                    ->setPrenom($data['prenom'] ?? null)
+                    ->setTelephone($data['telephone'] ?? null);
 
                 $this->courriersService->save($courrier, $uploadedFiles);
 
@@ -217,10 +219,6 @@ class CourrierController extends BaseApiController
     }
 
 
-
-    /**
-     * Supprime logiquement un courrier (Soft Delete)
-     */
     #[Route('/{id}', name: 'api_courriers_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
     #[TokenRequired]
     public function delete(int $id, Request $request): JsonResponse
