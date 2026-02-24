@@ -31,6 +31,9 @@ class Messages extends BaseEntite
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $isReadAt = null;
 
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $partagerAt = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $observation = null;
 
@@ -84,6 +87,17 @@ class Messages extends BaseEntite
     public function setIsReadAt(?\DateTimeInterface $isReadAt): static
     {
         $this->isReadAt = $isReadAt;
+        return $this;
+    }
+
+    public function getPartagerAt(): ?\DateTimeImmutable
+    {
+        return $this->partagerAt;
+    }
+
+    public function setPartagerAt(?\DateTimeImmutable $partagerAt): self
+    {
+        $this->partagerAt = $partagerAt;
         return $this;
     }
 
@@ -148,6 +162,7 @@ class Messages extends BaseEntite
                 'prenom' => $this->destinataire->getPrenom(),
             ] : null,
             'isReadAt' => $this->isReadAt ? $this->isReadAt->format('Y-m-d H:i:s') : null,
+            'partagerAt' => $this->partagerAt ? $this->partagerAt->format('Y-m-d H:i:s') : null,
             'observation' => $this->observation,
             'dateCreation' => $this->getDateCreation() ? $this->getDateCreation()->format('Y-m-d H:i:s') : null,
             'fichiers' => $this->fichiers->map(fn(Fichiers $f) => [

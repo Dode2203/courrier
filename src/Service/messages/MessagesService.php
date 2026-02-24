@@ -32,9 +32,9 @@ class MessagesService
      * 
      * @param UploadedFile[] $files
      */
-    public function envoyerMessage(int $expId, int $destId, int $courrierId, ?string $observation = null, array $files = []): void
+    public function envoyerMessage(int $expId, int $destId, int $courrierId, ?string $observation = null, array $files = []): Messages
     {
-        $this->entityManager->wrapInTransaction(function () use ($expId, $destId, $courrierId, $observation, $files) {
+        return $this->entityManager->wrapInTransaction(function () use ($expId, $destId, $courrierId, $observation, $files) {
             $expediteur = $this->utilisateursService->getUserById($expId);
             $this->validator->throwIfNull($expediteur, "Expéditeur avec l'ID $expId introuvable.");
 
@@ -61,7 +61,18 @@ class MessagesService
                     $this->entityManager->persist($fichierEntity);
                 }
             }
+
+            return $message;
         });
+    }
+
+    /**
+     * Marque un message comme partagé (transféré)
+     */
+    public function marquerCommePartage(Messages $message): void
+    {
+        $message->setPartagerAt(new \DateTimeImmutable());
+        $this->repo->save($message);
     }
 
 

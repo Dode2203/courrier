@@ -68,13 +68,15 @@ class MessageController extends BaseApiController
 
             $this->validator->validateRequiredFields($data, ['destId', 'courrierId']);
 
-            $this->messagesService->envoyerMessage(
+            $message = $this->messagesService->envoyerMessage(
                 expId: $user->getId(),
                 destId: (int) $data['destId'],
                 courrierId: (int) $data['courrierId'],
                 observation: $data['observation'] ?? null,
                 files: is_array($uploadedFiles) ? $uploadedFiles : [$uploadedFiles]
             );
+
+            $this->messagesService->marquerCommePartage($message);
 
             return $this->jsonSuccess(message: 'Courrier transféré avec succès.');
         } catch (\Throwable $e) {

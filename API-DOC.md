@@ -653,6 +653,7 @@ Le résultat est trié par **ordre chronologique décroissant** (le message le p
         "destinataire": { "id": 5, "nom": "RANDRIA", "prenom": "Mamy" },
         "courrier": { "id": 42, "reference": "21022026/REF1", "object": "Demande de bourse" },
         "observation": "<p>Veuillez traiter ce dossier...</p>",
+        "partagerAt": "2026-02-23 09:41:00",
         "fichiers": [
           { "id": 1, "nom": "PJ1.pdf", "type": "application/pdf" }
         ]
