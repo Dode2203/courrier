@@ -58,13 +58,38 @@ class CourrierController extends BaseApiController
         }
     }
 
+    /**
+     * Liste tous les courriers impliquant l'utilisateur connecté (créateur, expéditeur ou destinataire)
+     */
+    #[Route('/getAllbyUser', name: 'api_courriers_get_all_by_user', methods: ['GET'])]
+    #[TokenRequired]
+    public function getAllbyUser(Request $request): JsonResponse
+    {
+        try {
+            $user = $this->getUserFromRequest($request);
+
+            $page = (int) $request->query->get('page', 1);
+            $limit = (int) $request->query->get('limit', 20);
+
+            $result = $this->courriersService->getByUserContext($user->getId(), $page, $limit);
+
+            return $this->jsonSuccess(
+                data: $result['items'],
+                message: "Liste de vos courriers récupérée avec succès.",
+                extras: $result['pagination']
+            );
+        } catch (\Throwable $e) {
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
+        }
+    }
+
 
     #[Route('/creer', name: 'api_courriers_creer', methods: ['POST'])]
     #[TokenRequired]
     public function creer(Request $request): JsonResponse
     {
         try {
-            $this->getUserFromRequest($request);
+            $user = $this->getUserFromRequest($request);
             $data = $request->request->all();
 
             $this->validator->validateRequiredFields($data, ['mail', 'description', 'object', 'nom']);
@@ -77,6 +102,7 @@ class CourrierController extends BaseApiController
                 ->setPrenom($data['prenom'] ?? null)
                 ->setTelephone($data['telephone'] ?? null);
 
+            $courrier->setCreateur($user);
             $this->courriersService->save($courrier);
 
             return $this->jsonSuccess(
@@ -123,6 +149,7 @@ class CourrierController extends BaseApiController
                     ->setPrenom($data['prenom'] ?? null)
                     ->setTelephone($data['telephone'] ?? null);
 
+                $courrier->setCreateur($user);
                 $this->courriersService->save($courrier);
 
                 $this->messagesService->envoyerMessage(

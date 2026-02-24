@@ -5,6 +5,7 @@ namespace App\Entity\courriers;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\courriers\CourriersRepository;
 use App\Entity\utils\BaseEntite;
+use App\Entity\utilisateurs\Utilisateurs;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
@@ -36,6 +37,10 @@ class Courriers extends BaseEntite
 
     #[ORM\Column(type: "datetime_immutable", nullable: true)]
     private ?\DateTimeImmutable $dateFin = null;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateurs::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Utilisateurs $createur = null;
 
     public function __construct()
     {
@@ -129,6 +134,17 @@ class Courriers extends BaseEntite
         return $this;
     }
 
+    public function getCreateur(): ?Utilisateurs
+    {
+        return $this->createur;
+    }
+
+    public function setCreateur(?Utilisateurs $createur): self
+    {
+        $this->createur = $createur;
+        return $this;
+    }
+
     public function toArray(): array
     {
         return [
@@ -142,6 +158,11 @@ class Courriers extends BaseEntite
             'telephone' => $this->telephone,
             'dateFin' => $this->dateFin ? $this->dateFin->format('Y-m-d H:i:s') : null,
             'dateCreation' => $this->getDateCreation() ? $this->getDateCreation()->format('Y-m-d H:i:s') : null,
+            'createur' => $this->createur ? [
+                'id' => $this->createur->getId(),
+                'nom' => $this->createur->getNom(),
+                'prenom' => $this->createur->getPrenom(),
+            ] : null,
         ];
     }
 }

@@ -113,6 +113,31 @@ class CourriersService
     }
 
     /**
+     * Liste paginée des courriers impliquant un utilisateur
+     */
+    public function getByUserContext(int $userId, int $page, int $limit): array
+    {
+        $paginator = $this->repo->findAllByUserContext($userId, $page, $limit);
+        $totalItems = count($paginator);
+        $lastPage = ceil($totalItems / $limit);
+
+        $items = [];
+        foreach ($paginator as $courrier) {
+            $items[] = $courrier->toArray();
+        }
+
+        return [
+            'items' => $items,
+            'pagination' => [
+                'total' => $totalItems,
+                'page' => $page,
+                'lastPage' => (int) $lastPage,
+                'limit' => $limit
+            ]
+        ];
+    }
+
+    /**
      * Liste paginée des courriers
      */
     public function getAllPaginated(int $page, int $limit): array

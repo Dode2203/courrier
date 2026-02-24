@@ -83,6 +83,25 @@ class CourriersRepository extends ServiceEntityRepository
     }
 
     /**
+     * Récupère les courriers ou l'utilisateur est impliqué (créateur, expéditeur ou destinataire de message)
+     * @return Paginator
+     */
+    public function findAllByUserContext(int $userId, int $page, int $limit): Paginator
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->distinct()
+            ->leftJoin('App\Entity\messages\Messages', 'm', 'WITH', 'm.courrier = c.id')
+            ->andWhere('c.createur = :userId OR m.expediteur = :userId OR m.destinataire = :userId')
+            ->andWhere('c.deletedAt IS NULL')
+            ->setParameter('userId', $userId)
+            ->orderBy('c.dateCreation', 'DESC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+
+        return new Paginator($qb->getQuery());
+    }
+
+    /**
      * @return Paginator
      */
     public function findAllPaginated(int $page, int $limit): Paginator

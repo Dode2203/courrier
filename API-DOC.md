@@ -298,6 +298,40 @@ Liste les courriers enregistrés avec pagination et tri chronologique (plus réc
 
 ---
 
+### `GET /api/courriers/getAllbyUser`
+
+Récupère la liste paginée de tous les courriers qui impliquent l'utilisateur connecté (créateur du courrier, expéditeur ou destinataire d'un message lié).
+
+- **Paramètres de requête (Query String) :**
+    - `page` (int, défaut 1) : Numéro de la page.
+    - `limit` (int, défaut 20) : Nombre d'éléments par page.
+- **Accès :** Tout utilisateur authentifié
+
+#### Réponse — `200 OK`
+
+```json
+{
+  "status": "success",
+  "message": "Liste de vos courriers récupérée avec succès.",
+  "data": [
+    {
+      "id": 42,
+      "reference": "21022026/REF1",
+      "object": "Demande de bourse",
+      "nom": "RAKOTO",
+      "prenom": "Jean",
+      ...
+    }
+  ],
+  "total": 12,
+  "page": 1,
+  "lastPage": 1,
+  "limit": 20
+}
+```
+
+---
+
 ### `POST /api/courriers/creer`
 
 Crée un nouveau courrier, avec upload optionnel d'un fichier joint.
@@ -448,6 +482,7 @@ Retourne les détails d'un courrier par son ID.
 ```json
 {
   "status": "success",
+  "message": "Détails du courrier récupérés.",
   "data": {
     "id": 42,
     "reference": "REF-2026-00042",
@@ -455,19 +490,12 @@ Retourne les détails d'un courrier par son ID.
     "description": "Dossier de candidature pour la bourse ESPA 2026",
     "mail": "etudiant@example.mg",
     "dateFin": null,
-    "dateCreation": "2026-02-21 06:00:00",
-    "fichiers": [
-      {
-        "id": 101,
-        "nom": "scan_facture.pdf",
-        "type": "application/pdf"
-      }
-    ]
+    "dateCreation": "2026-02-21 06:00:00"
   }
 }
 ```
 
-> **Note :** Le champ `fichiers` contient une liste simplifiée des pièces jointes. Pour le téléchargement du contenu binaire, utilisez `GET /api/fichiers/{id}/download`.
+> **Note :** Les fichiers ne sont plus inclus directement dans l'objet Courrier. Ils sont accessibles via les messages associés ou via `GET /api/fichiers/{id}/download`.
 
 #### Erreurs
 
@@ -487,9 +515,8 @@ Supprime logiquement un courrier (Soft Delete). Le courrier ne sera plus visible
 ```json
 {
   "status": "success",
-  "data": {
-    "message": "Courrier supprimé avec succès."
-  }
+  "message": "Courrier supprimé avec succès.",
+  "data": null
 }
 ```
 
@@ -508,9 +535,8 @@ Clôture un dossier courrier et notifie l'étudiant concerné par email.
 ```json
 {
   "status": "success",
-  "data": {
-    "message": "Le dossier a été clôturé et l'étudiant a été notifié par mail."
-  }
+  "message": "Le dossier a été clôturé et l'étudiant a été notifié par mail.",
+  "data": null
 }
 ```
 
@@ -523,42 +549,9 @@ Clôture un dossier courrier et notifie l'étudiant concerné par email.
 
 ---
 
-### `GET /api/courriers/{id}/fichier`
-
-Télécharge ou affiche le fichier binaire associé à un courrier (PDF, image, etc.).
-
-- **Contrainte d'URL :** `{id}` doit être un entier positif (`requirements: ['id' => '\d+']`)
-- **Accès :** Tout utilisateur authentifié
-
-#### Réponse — Flux binaire
-
-> ⚠️ Cet endpoint **ne retourne pas du JSON**. Il retourne directement le contenu binaire du fichier avec les headers HTTP suivants :
-
-| Header                | Valeur dynamique                                              |
-|-----------------------|---------------------------------------------------------------|
-| `Content-Type`        | Type MIME du fichier (ex: `application/pdf`, `image/jpeg`)    |
-| `Content-Disposition` | `inline; filename="<nom_du_fichier>"`                         |
-
-Le navigateur (ou le client HTTP) peut ainsi afficher le fichier directement (`inline`) sans forcer le téléchargement.
-
-#### Exemple de headers de réponse
-
-```
-HTTP/1.1 200 OK
-Content-Type: application/pdf
-Content-Disposition: inline; filename="courrier-espa-2026.pdf"
-```
-
-#### Erreurs (retournées en JSON)
-
-| Code  | Message                                        | Cause                                |
-|-------|------------------------------------------------|--------------------------------------|
-| `404` | `Aucun fichier n'est associé à ce courrier.`   | Courrier sans pièce jointe           |
-| `404` | `Courrier introuvable.`                        | Aucun courrier avec cet ID           |
-
 ---
 
-## 6. Messages
+### ✉️ Messages
 
 > **Header requis pour tous les endpoints :** `Authorization: Bearer <token>`
 
@@ -740,7 +733,8 @@ Supprime logiquement un message (Soft Delete). Le message n'apparaîtra plus dan
 | `POST`   | `/utilisateur`                        | `application/json`      | ✅ Admin     | Crée un nouvel utilisateur               |
 | `GET`    | `/utilisateur/{id}`                   | —                       | ✅ Admin     | Détails d'un utilisateur                 |
 | `POST`   | `/utilisateur/{id}`                   | `application/json`      | ✅ Admin     | Mise à jour d'un utilisateur             |
-| `GET`    | `/api/courriers`                      | —                       | ✅ Token     | Liste paginée des courriers              |
+| `GET`    | `/api/courriers`                      | —                       | ✅ Token     | Liste paginée des courriers (Admin)      |
+| `GET`    | `/api/courriers/getAllbyUser`         | —                       | ✅ Token     | Liste les courriers impliquant l'USER    |
 | `POST`   | `/api/courriers/creer`                | `multipart/form-data`   | ✅ Token     | Crée un courrier                         |
 | `POST`   | `/api/courriers/creerTransferer`      | `multipart/form-data`   | ✅ Token     | Crée un courrier et le transfère         |
 | `GET`    | `/api/courriers/recherche`            | —                       | ✅ Token     | Recherche par nom ou prénom              |
