@@ -11,6 +11,7 @@ use App\Service\utilisateurs\UtilisateursService;
 use App\Service\utils\JwtTokenManager;
 use App\Service\utils\ValidationService;
 use App\Service\messages\MessagesService;
+use App\Service\utils\SecurityService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -28,12 +29,13 @@ class CourrierController extends BaseApiController
         UtilisateursService $utilisateursService,
         ValidationService $validator,
         ApiResponseService $responseService,
+        SecurityService $securityService,
         private readonly CourriersService $courriersService,
         private readonly MailService $mailService,
         private readonly MessagesService $messagesService,
         private readonly EntityManagerInterface $entityManager
     ) {
-        parent::__construct($jwtManager, $utilisateursService, $validator, $responseService);
+        parent::__construct($jwtManager, $utilisateursService, $validator, $responseService, $securityService);
     }
 
     #[Route('', name: 'api_courriers_list', methods: ['GET'])]
@@ -193,10 +195,10 @@ class CourrierController extends BaseApiController
             }
 
             $courriers = $this->courriersService->recherche($nom, $prenom);
-            $items = array_map(fn(Courriers $c) => $c->toArray(), $courriers);
+            $data = array_map(fn($c) => $c->toArray(), $courriers);
 
             return $this->jsonSuccess(
-                data: $items,
+                data: $data,
                 message: "Résultats de recherche récupérés."
             );
         } catch (\Throwable $e) {
@@ -209,9 +211,11 @@ class CourrierController extends BaseApiController
     public function show(int $id, Request $request): JsonResponse
     {
         try {
-            $this->getUserFromRequest($request);
+            $user = $this->getUserFromRequest($request);
             $courrier = $this->courriersService->getCourrierById($id);
-            $this->validator->throwIfNull($courrier, "Courrier avec l'ID $id introuvable.");
+            $this->validator->throwIfNull($courrier, "Courrier introuvable.");
+
+            $this->checkAccess($courrier, $user);
 
             return $this->jsonSuccess(
                 data: $courrier->toArray(),
@@ -228,6 +232,11 @@ class CourrierController extends BaseApiController
     {
         try {
             $user = $this->getUserFromRequest($request);
+            $courrier = $this->courriersService->getCourrierById($id);
+            $this->validator->throwIfNull($courrier, "Courrier introuvable.");
+
+            $this->checkAccess($courrier, $user);
+
             $messages = $this->messagesService->getMessagesByCourrier($id, $user->getId());
 
             return $this->jsonSuccess(
@@ -244,8 +253,11 @@ class CourrierController extends BaseApiController
     public function cloturer(int $id, Request $request): JsonResponse
     {
         try {
-            // Vérifie l'utilisateur connecté
-            $this->getUserFromRequest($request);
+            $user = $this->getUserFromRequest($request);
+            $courrier = $this->courriersService->getCourrierById($id);
+            $this->validator->throwIfNull($courrier, "Courrier introuvable.");
+
+            $this->checkAccess($courrier, $user);
 
             // Envoi du mail et clôture via le service spécialisé
             $this->mailService->envoyerMail($id);
@@ -254,7 +266,6 @@ class CourrierController extends BaseApiController
                 data: null,
                 message: "Le dossier a été clôturé et l'étudiant a été notifié par mail."
             );
-
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -266,12 +277,17 @@ class CourrierController extends BaseApiController
     public function delete(int $id, Request $request): JsonResponse
     {
         try {
-            $this->getUserFromRequest($request);
+            $user = $this->getUserFromRequest($request);
+            $courrier = $this->courriersService->getCourrierById($id);
+            $this->validator->throwIfNull($courrier, "Courrier introuvable.");
+
+            $this->checkAccess($courrier, $user);
+
             $this->courriersService->supprimerCourrier($id);
 
             return $this->jsonSuccess(
                 data: null,
-                message: 'Courrier supprimé avec succès.'
+                message: "Courrier supprimé avec succès."
             );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);

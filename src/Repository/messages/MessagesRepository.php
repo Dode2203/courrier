@@ -123,4 +123,19 @@ class MessagesRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    public function isUserInvolvedInCourrier(int $courrierId, int $userId): bool
+    {
+        $count = $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->andWhere('m.courrier = :courrierId')
+            ->andWhere('m.expediteur = :userId OR m.destinataire = :userId')
+            ->andWhere('m.deletedAt IS NULL')
+            ->setParameter('courrierId', $courrierId)
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count > 0;
+    }
 }

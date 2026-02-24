@@ -172,4 +172,11 @@ class MessagesService
 
         return $message->toArray();
     }
+    /**
+     * Récupère un message par son ID
+     */
+    public function getById(int $id): ?Messages
+    {
+        return $this->repo->getById($id);
+    }
 }

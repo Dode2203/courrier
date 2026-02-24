@@ -4,6 +4,7 @@ namespace App\Controller\Api\messages;
 
 use App\Controller\Api\utils\BaseApiController;
 use App\Service\messages\MessagesService;
+use App\Service\utils\SecurityService;
 use App\Service\utils\ApiResponseService;
 use App\Service\utilisateurs\UtilisateursService;
 use App\Service\utils\JwtTokenManager;
@@ -21,9 +22,10 @@ class MessageController extends BaseApiController
         UtilisateursService $utilisateursService,
         ValidationService $validator,
         ApiResponseService $responseService,
+        SecurityService $securityService,
         private readonly MessagesService $messagesService
     ) {
-        parent::__construct($jwtManager, $utilisateursService, $validator, $responseService);
+        parent::__construct($jwtManager, $utilisateursService, $validator, $responseService, $securityService);
     }
 
     /**
@@ -95,7 +97,12 @@ class MessageController extends BaseApiController
     public function lire(int $id, Request $request): JsonResponse
     {
         try {
-            $this->getUserFromRequest($request);
+            $user = $this->getUserFromRequest($request);
+            $message = $this->messagesService->getById($id);
+            $this->validator->throwIfNull($message, "Message introuvable.");
+
+            $this->checkAccess($message, $user);
+
             $this->messagesService->lireMessage($id);
 
             return $this->jsonSuccess(
@@ -115,7 +122,12 @@ class MessageController extends BaseApiController
     public function nonLu(int $id, Request $request): JsonResponse
     {
         try {
-            $this->getUserFromRequest($request);
+            $user = $this->getUserFromRequest($request);
+            $message = $this->messagesService->getById($id);
+            $this->validator->throwIfNull($message, "Message introuvable.");
+
+            $this->checkAccess($message, $user);
+
             $this->messagesService->marquerNonLu($id);
 
             return $this->jsonSuccess(
@@ -136,10 +148,13 @@ class MessageController extends BaseApiController
     {
         try {
             $user = $this->getUserFromRequest($request);
-            $data = $this->messagesService->getMessageDetail($id, $user->getId());
+            $message = $this->messagesService->getById($id);
+            $this->validator->throwIfNull($message, "Message introuvable.");
+
+            $this->checkAccess($message, $user);
 
             return $this->jsonSuccess(
-                data: $data,
+                data: $message->toArray(),
                 message: "Détails du message récupérés."
             );
         } catch (\Throwable $e) {
@@ -155,7 +170,12 @@ class MessageController extends BaseApiController
     public function delete(int $id, Request $request): JsonResponse
     {
         try {
-            $this->getUserFromRequest($request);
+            $user = $this->getUserFromRequest($request);
+            $message = $this->messagesService->getById($id);
+            $this->validator->throwIfNull($message, "Message introuvable.");
+
+            $this->checkAccess($message, $user);
+
             $this->messagesService->supprimerMessage($id);
 
             return $this->jsonSuccess(

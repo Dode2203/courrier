@@ -7,6 +7,7 @@ use App\Service\utilisateurs\UtilisateursService;
 use App\Service\utils\ApiResponseService;
 use App\Service\utils\JwtTokenManager;
 use App\Service\utils\ValidationService;
+use App\Service\utils\SecurityService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,8 +19,19 @@ abstract class BaseApiController extends AbstractController
         protected readonly JwtTokenManager $jwtManager,
         protected readonly UtilisateursService $utilisateursService,
         protected readonly ValidationService $validator,
-        protected readonly ApiResponseService $responseService
+        protected readonly ApiResponseService $responseService,
+        protected readonly SecurityService $securityService
     ) {
+    }
+
+    /**
+     * Vérifie l'accès d'un utilisateur à une entité
+     */
+    protected function checkAccess(mixed $entity, Utilisateurs $user): void
+    {
+        if (!$this->securityService->canAccess($user, $entity)) {
+            throw new AccessDeniedHttpException("Accès refusé.");
+        }
     }
 
     /**
