@@ -411,22 +411,20 @@ Recherche ciblée des courriers par nom et/ou prénom du déposant (**Insensible
 ```json
 {
   "status": "success",
-  "data": {
-    "courriers": [
-      {
-        "id": 42,
-        "reference": "21022026/REF1",
-        "nom": "RAKOTO",
-        "prenom": "Jean",
-        "object": "Demande de bourse",
-        "description": "...",
-        "mail": "rakoto@example.mg",
-        "dateCreation": "2026-02-21 06:00:00",
-        "dateFin": null,
-        "fichiers": []
-      }
-    ]
-  }
+  "message": "Résultats de recherche récupérés.",
+  "data": [
+    {
+      "id": 42,
+      "reference": "21022026/REF1",
+      "nom": "RAKOTO",
+      "prenom": "Jean",
+      "object": "Demande de bourse",
+      "description": "...",
+      "mail": "rakoto@example.mg",
+      "dateCreation": "2026-02-21 06:00:00",
+      "dateFin": null
+    }
+  ]
 }
 ```
 
