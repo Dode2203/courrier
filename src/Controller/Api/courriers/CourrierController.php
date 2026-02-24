@@ -222,6 +222,23 @@ class CourrierController extends BaseApiController
         }
     }
 
+    #[Route('/{id}/messages', name: 'api_courriers_messages', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[TokenRequired]
+    public function messages(int $id, Request $request): JsonResponse
+    {
+        try {
+            $user = $this->getUserFromRequest($request);
+            $messages = $this->messagesService->getMessagesByCourrier($id, $user->getId());
+
+            return $this->jsonSuccess(
+                data: $messages,
+                message: "Messages du courrier récupérés avec succès."
+            );
+        } catch (\Throwable $e) {
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
+        }
+    }
+
     #[Route('/{id}/cloturer', name: 'api_courriers_cloturer', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[TokenRequired]
     public function cloturer(int $id, Request $request): JsonResponse

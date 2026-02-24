@@ -104,4 +104,23 @@ class MessagesRepository extends ServiceEntityRepository
 
         return new Paginator($qb->getQuery());
     }
+
+    /**
+     * Récupère les messages d'un courrier avec gestion de la visibilité contextuelle
+     */
+    public function findByCourrierWithContext(int $courrierId, int $userId, bool $isCreator): array
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->andWhere('m.courrier = :courrierId')
+            ->andWhere('m.deletedAt IS NULL')
+            ->setParameter('courrierId', $courrierId)
+            ->orderBy('m.dateCreation', 'ASC');
+
+        if (!$isCreator) {
+            $qb->andWhere('m.expediteur = :userId OR m.destinataire = :userId')
+                ->setParameter('userId', $userId);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }

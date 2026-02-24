@@ -503,6 +503,37 @@ Retourne les détails d'un courrier par son ID.
 
 ---
 
+### `GET /api/courriers/{id}/messages`
+
+Récupère la liste de tous les messages liés à un courrier spécifique.
+
+- **Sécurité :** L'utilisateur doit être participant (expéditeur ou destinataire) d'un message, ou être le créateur du courrier.
+- **Accès :** Tout utilisateur authentifié
+- **Pagination :** Non paginé (retourne tous les messages chronologiquement).
+
+#### Réponse — `200 OK`
+
+```json
+{
+  "status": "success",
+  "message": "Messages du courrier récupérés avec succès.",
+  "data": [
+    {
+      "id": 16,
+      "dateCreation": "2026-02-23 09:40:00",
+      "expediteur": { "id": 1, "nom": "RAJAO", "prenom": "Emile" },
+      "destinataire": { "id": 5, "nom": "RANDRIA", "prenom": "Mamy" },
+      "observation": "<p>Veuillez traiter ce dossier...</p>",
+      "fichiers": [
+        { "id": 1, "nom": "PJ1.pdf", "type": "application/pdf" }
+      ]
+    }
+  ]
+}
+```
+
+---
+
 ### `DELETE /api/courriers/{id}`
 
 Supprime logiquement un courrier (Soft Delete). Le courrier ne sera plus visible via `GET /api/courriers/{id}`.
@@ -739,6 +770,7 @@ Supprime logiquement un message (Soft Delete). Le message n'apparaîtra plus dan
 | `POST`   | `/api/courriers/creerTransferer`      | `multipart/form-data`   | ✅ Token     | Crée un courrier et le transfère         |
 | `GET`    | `/api/courriers/recherche`            | —                       | ✅ Token     | Recherche par nom ou prénom              |
 | `GET`    | `/api/courriers/{id}`                 | —                       | ✅ Token     | Détails d'un courrier                    |
+| `GET`    | `/api/courriers/{id}/messages`        | —                       | ✅ Token     | Liste les messages d'un courrier         |
 | `POST`   | `/api/courriers/{id}/cloturer`        | —                       | ✅ Token     | Clôture un dossier et notifie par mail   |
 | `GET`    | `/api/fichiers/{id}/download`         | —                       | ✅ Token     | Télécharge un fichier par son ID         |
 | `DELETE` | `/api/courriers/{id}`                 | —                       | ✅ Token     | Supprime logiquement un courrier         |

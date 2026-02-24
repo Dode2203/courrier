@@ -138,4 +138,19 @@ class MessagesService
             ]
         ];
     }
+
+    /**
+     * Récupère les messages associés à un courrier avec gestion des droits
+     */
+    public function getMessagesByCourrier(int $courrierId, int $userId): array
+    {
+        $courrier = $this->courriersService->getCourrierById($courrierId);
+        $this->validator->throwIfNull($courrier, "Courrier avec l'ID $courrierId introuvable.");
+
+        $isCreator = $courrier->getCreateur() && $courrier->getCreateur()->getId() === $userId;
+
+        $messages = $this->repo->findByCourrierWithContext($courrierId, $userId, $isCreator);
+
+        return array_map(fn(Messages $m) => $m->toArray(), $messages);
+    }
 }
