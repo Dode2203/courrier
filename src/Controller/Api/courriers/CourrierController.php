@@ -51,7 +51,7 @@ class CourrierController extends BaseApiController
             return $this->jsonSuccess(
                 data: $result['items'],
                 message: "Liste des courriers récupérée avec succès.",
-                extras: ['pagination' => $result['pagination']]
+                extras: $result['pagination']
             );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
@@ -170,8 +170,7 @@ class CourrierController extends BaseApiController
 
             return $this->jsonSuccess(
                 data: $items,
-                message: "Résultats de recherche récupérés.",
-                extras: ['pagination' => ['total' => count($items), 'page' => 1, 'lastPage' => 1, 'limit' => count($items)]]
+                message: "Résultats de recherche récupérés."
             );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
@@ -208,6 +207,7 @@ class CourrierController extends BaseApiController
             $this->mailService->envoyerMail($id);
 
             return $this->jsonSuccess(
+                data: null,
                 message: "Le dossier a été clôturé et l'étudiant a été notifié par mail."
             );
 
@@ -226,6 +226,7 @@ class CourrierController extends BaseApiController
             $this->courriersService->supprimerCourrier($id);
 
             return $this->jsonSuccess(
+                data: null,
                 message: 'Courrier supprimé avec succès.'
             );
         } catch (\Throwable $e) {

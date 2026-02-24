@@ -16,6 +16,7 @@ class ApiResponseService
         ];
 
         if (!empty($extras)) {
+            // Fusionne les extras directement à la racine
             $response = array_merge($response, $extras);
         }
 

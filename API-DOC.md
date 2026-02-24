@@ -25,7 +25,9 @@ Toutes les réponses JSON respectent la structure suivante, générée par `Base
 ```json
 {
   "status": "success",
-  "data": { ... }
+  "message": "Message d'information",
+  "data": { ... },
+  "metadata_key": "metadata_value"
 }
 ```
 
@@ -279,31 +281,18 @@ Liste les courriers enregistrés avec pagination et tri chronologique (plus réc
 #### Réponse — `200 OK`
 
 ```json
-{
   "status": "success",
   "message": "Liste des courriers récupérée avec succès.",
-  "data": {
-    "items": [
-      {
-        "id": 42,
-        "reference": "21022026/REF1",
-        "nom": "RAKOTO",
-        "prenom": "Jean",
-        "telephone": "034 56 789 01",
-        "object": "Demande de bourse",
-        "description": "...",
-        "mail": "rakoto@example.mg",
-        "dateCreation": "2026-02-21 06:00:00",
-        "dateFin": null
-      }
-    ],
-    "pagination": {
-      "total": 125,
-      "page": 1,
-      "lastPage": 7,
-      "limit": 20
+  "data": [
+    {
+      "id": 42,
+      ...
     }
-  }
+  ],
+  "total": 125,
+  "page": 1,
+  "lastPage": 7,
+  "limit": 20
 }
 ```
 
@@ -387,39 +376,6 @@ Crée un courrier **et** le transfère immédiatement à un destinataire en une 
 | `400` | `Champs requis manquants : mail, object, destId...`       | Champs obligatoires absents |
 | `400` | `Le fichier est trop volumineux (max 5 Mo)`               | Fichier joint > 5 Mo        |
 | `404` | `Utilisateur introuvable pour l'ID <destId>`              | Destinataire inexistant     |
-
----
-
-### `GET /api/courriers/{id}/fichiers`
-
-Liste les métadonnées de toutes les pièces jointes d'un courrier.
-
-- **Contrainte d'URL :** `{id}` doit être un entier positif (`\d+`)
-- **Accès :** Tout utilisateur authentifié
-
-#### Réponse — `200 OK`
-
-```json
-{
-  "status": "success",
-  "data": {
-    "fichiers": [
-      {
-        "id": 101,
-        "nom": "scan_facture.pdf",
-        "type": "application/pdf",
-        "dateCreation": "2026-02-21 10:00:00"
-      },
-      {
-        "id": 102,
-        "nom": "photo_justificatif.jpg",
-        "type": "image/jpeg",
-        "dateCreation": "2026-02-21 10:05:00"
-      }
-    ]
-  }
-}
-```
 
 ---
 
@@ -513,7 +469,7 @@ Retourne les détails d'un courrier par son ID.
 }
 ```
 
-> **Note :** Le champ `fichiers` contient une liste simplifiée. Pour les métadonnées complètes, utilisez `GET /api/courriers/{id}/fichiers`. Pour le téléchargement, utilisez `GET /api/fichiers/{id}/download`.
+> **Note :** Le champ `fichiers` contient une liste simplifiée des pièces jointes. Pour le téléchargement du contenu binaire, utilisez `GET /api/fichiers/{id}/download`.
 
 #### Erreurs
 
@@ -643,29 +599,25 @@ Le résultat est trié par **ordre chronologique décroissant** (le message le p
 {
   "status": "success",
   "message": "Messages récupérés avec succès.",
-  "data": {
-    "items": [
-      {
-        "id": 16,
-        "dateCreation": "2026-02-23 09:40:00",
-        "isReadAt": null,
-        "expediteur": { "id": 1, "nom": "RAJAO", "prenom": "Emile" },
-        "destinataire": { "id": 5, "nom": "RANDRIA", "prenom": "Mamy" },
-        "courrier": { "id": 42, "reference": "21022026/REF1", "object": "Demande de bourse" },
-        "observation": "<p>Veuillez traiter ce dossier...</p>",
-        "partagerAt": "2026-02-23 09:41:00",
-        "fichiers": [
-          { "id": 1, "nom": "PJ1.pdf", "type": "application/pdf" }
-        ]
-      }
-    ],
-    "pagination": {
-      "total": 54,
-      "page": 1,
-      "lastPage": 3,
-      "limit": 20
+  "data": [
+    {
+      "id": 16,
+      "dateCreation": "2026-02-23 09:40:00",
+      "isReadAt": null,
+      "expediteur": { "id": 1, "nom": "RAJAO", "prenom": "Emile" },
+      "destinataire": { "id": 5, "nom": "RANDRIA", "prenom": "Mamy" },
+      "courrier": { "id": 42, "reference": "21022026/REF1", "object": "Demande de bourse" },
+      "observation": "<p>Veuillez traiter ce dossier...</p>",
+      "partagerAt": "2026-02-23 09:41:00",
+      "fichiers": [
+        { "id": 1, "nom": "PJ1.pdf", "type": "application/pdf" }
+      ]
     }
-  }
+  ],
+  "total": 54,
+  "page": 1,
+  "lastPage": 3,
+  "limit": 20
 }
 ```
 
@@ -796,7 +748,6 @@ Supprime logiquement un message (Soft Delete). Le message n'apparaîtra plus dan
 | `GET`    | `/api/courriers/recherche`            | —                       | ✅ Token     | Recherche par nom ou prénom              |
 | `GET`    | `/api/courriers/{id}`                 | —                       | ✅ Token     | Détails d'un courrier                    |
 | `POST`   | `/api/courriers/{id}/cloturer`        | —                       | ✅ Token     | Clôture un dossier et notifie par mail   |
-| `GET`    | `/api/courriers/{id}/fichiers`        | —                       | ✅ Token     | Liste les métadonnées des pièces jointes |
 | `GET`    | `/api/fichiers/{id}/download`         | —                       | ✅ Token     | Télécharge un fichier par son ID         |
 | `DELETE` | `/api/courriers/{id}`                 | —                       | ✅ Token     | Supprime logiquement un courrier         |
 | `GET`    | `/api/messages`                       | —                       | ✅ Token     | Liste les messages reçus (paginés)       |

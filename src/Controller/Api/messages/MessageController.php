@@ -45,7 +45,7 @@ class MessageController extends BaseApiController
             return $this->jsonSuccess(
                 data: $result['items'],
                 message: "Messages récupérés avec succès.",
-                extras: ['pagination' => $result['pagination']]
+                extras: $result['pagination']
             );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
@@ -78,7 +78,10 @@ class MessageController extends BaseApiController
 
             $this->messagesService->marquerCommePartage($message);
 
-            return $this->jsonSuccess(message: 'Courrier transféré avec succès.');
+            return $this->jsonSuccess(
+                data: null,
+                message: 'Courrier transféré avec succès.'
+            );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -95,7 +98,10 @@ class MessageController extends BaseApiController
             $this->getUserFromRequest($request);
             $this->messagesService->lireMessage($id);
 
-            return $this->jsonSuccess(message: 'Message marqué comme lu.');
+            return $this->jsonSuccess(
+                data: null,
+                message: 'Message marqué comme lu.'
+            );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -112,7 +118,10 @@ class MessageController extends BaseApiController
             $this->getUserFromRequest($request);
             $this->messagesService->marquerNonLu($id);
 
-            return $this->jsonSuccess(message: 'Message marqué comme non lu.');
+            return $this->jsonSuccess(
+                data: null,
+                message: 'Message marqué comme non lu.'
+            );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
@@ -129,7 +138,10 @@ class MessageController extends BaseApiController
             $this->getUserFromRequest($request);
             $this->messagesService->supprimerMessage($id);
 
-            return $this->jsonSuccess(message: 'Message supprimé avec succès.');
+            return $this->jsonSuccess(
+                data: null,
+                message: 'Message supprimé avec succès.'
+            );
         } catch (\Throwable $e) {
             return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
         }
