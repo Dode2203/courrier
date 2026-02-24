@@ -153,4 +153,23 @@ class MessagesService
 
         return array_map(fn(Messages $m) => $m->toArray(), $messages);
     }
+
+    /**
+     * Récupère le détail d'un message avec vérification des droits
+     */
+    public function getMessageDetail(int $messageId, int $userId): array
+    {
+        $message = $this->repo->getById($messageId);
+        $this->validator->throwIfNull($message, "Message avec l'ID $messageId introuvable.");
+
+        // Sécurité : Seul l'expéditeur ou le destinataire peut voir les détails
+        if (
+            $message->getExpediteur()->getId() !== $userId &&
+            $message->getDestinataire()->getId() !== $userId
+        ) {
+            throw new \Exception("Vous n'êtes pas autorisé à consulter ce message.", 403);
+        }
+
+        return $message->toArray();
+    }
 }

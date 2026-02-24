@@ -648,6 +648,61 @@ Le résultat est trié par **ordre chronologique décroissant** (le message le p
 
 ---
 
+### `GET /api/messages/{id}`
+
+Récupère les détails d'un message spécifique, incluant son contenu complet et la liste de ses pièces jointes.
+
+- **Contrainte d'URL :** `{id}` doit être un entier positif
+- **Sécurité :** L'utilisateur doit être l'expéditeur ou le destinataire du message.
+- **Accès :** Tout utilisateur authentifié
+
+#### Réponse — `200 OK`
+
+```json
+{
+  "status": "success",
+  "message": "Détails du message récupérés.",
+  "data": {
+    "id": 16,
+    "courrier": {
+      "id": 42,
+      "reference": "21022026/REF1",
+      "object": "Demande de bourse"
+    },
+    "expediteur": {
+      "id": 1,
+      "nom": "RAJAO",
+      "prenom": "Emile"
+    },
+    "destinataire": {
+      "id": 5,
+      "nom": "RANDRIA",
+      "prenom": "Mamy"
+    },
+    "isReadAt": "2026-02-23 10:00:00",
+    "partagerAt": "2026-02-23 09:40:00",
+    "observation": "<p>Bonjour, voici le dossier complet...</p>",
+    "dateCreation": "2026-02-23 09:40:00",
+    "fichiers": [
+      {
+        "id": 1,
+        "nom": "PJ1.pdf",
+        "type": "application/pdf"
+      }
+    ]
+  }
+}
+```
+
+#### Erreurs
+
+| Code  | Message                                           | Cause                       |
+|-------|---------------------------------------------------|-----------------------------|
+| `403` | `Vous n'êtes pas autorisé à consulter ce message.` | Utilisateur non Participant |
+| `404` | `Message avec l'ID X introuvable.`                | ID inexistant ou supprimé   |
+
+---
+
 ### `POST /api/messages/transferer`
 
 Transfère un courrier existant vers un utilisateur destinataire (crée un message de transfert).
@@ -775,6 +830,7 @@ Supprime logiquement un message (Soft Delete). Le message n'apparaîtra plus dan
 | `GET`    | `/api/fichiers/{id}/download`         | —                       | ✅ Token     | Télécharge un fichier par son ID         |
 | `DELETE` | `/api/courriers/{id}`                 | —                       | ✅ Token     | Supprime logiquement un courrier         |
 | `GET`    | `/api/messages`                       | —                       | ✅ Token     | Liste les messages reçus (paginés)       |
+| `GET`    | `/api/messages/{id}`                  | —                       | ✅ Token     | Détails d'un message (avec pièces jointes)|
 | `POST`   | `/api/messages/transferer`            | `application/json`      | ✅ Token     | Transfère un courrier à un utilisateur   |
 | `PATCH`  | `/api/messages/{id}/lire`             | —                       | ✅ Token     | Marque un message comme lu              |
 | `PATCH`  | `/api/messages/{id}/non-lu`           | —                       | ✅ Token     | Marque un message comme non lu          |

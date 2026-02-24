@@ -128,6 +128,26 @@ class MessageController extends BaseApiController
     }
 
     /**
+     * Récupère le détail d'un message
+     */
+    #[Route('/{id}', name: 'api_messages_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[TokenRequired]
+    public function show(int $id, Request $request): JsonResponse
+    {
+        try {
+            $user = $this->getUserFromRequest($request);
+            $data = $this->messagesService->getMessageDetail($id, $user->getId());
+
+            return $this->jsonSuccess(
+                data: $data,
+                message: "Détails du message récupérés."
+            );
+        } catch (\Throwable $e) {
+            return $this->jsonError($e->getMessage(), $e->getCode() ?: 400);
+        }
+    }
+
+    /**
      * Supprime logiquement un message (Soft Delete)
      */
     #[Route('/{id}', name: 'api_messages_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
