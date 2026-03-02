@@ -53,6 +53,7 @@ abstract class BaseApiController extends AbstractController
             'data' => $data
         ], $code);
     }
+    
 
     /**
      * Retourne une réponse JSON d'erreur
@@ -64,4 +65,5 @@ abstract class BaseApiController extends AbstractController
             'message' => $message
         ], $code);
     }
+
 }

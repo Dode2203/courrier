@@ -102,7 +102,7 @@ class MessagesService
         }
 
         return [
-            'items' => $items,
+            'messages' => $items,
             'pagination' => [
                 'total' => $totalItems,
                 'page' => $page,
