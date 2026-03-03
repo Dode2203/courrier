@@ -18,7 +18,7 @@ php bin/console cache:clear --env=dev
 
 pour lancer le serveur
 
-php -S 192.168.88.254:8000 -t public
+php -S 192.168.1.34:8000 -t public
 
 php -S 10.225.228.30:8000 -t public
 
